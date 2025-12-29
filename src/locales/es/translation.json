@@ -1,0 +1,122 @@
+{
+  "brand": {
+    "name": "Tangle-me"
+  },
+  "header": {
+    "tagline": "Tu agencia de publicidad integral",
+    "about": "Acerca de",
+    "login": "Iniciar sesión",
+    "signup": "Registrarse"
+  },
+  "about": {
+    "title": "Acerca de Tangle-me",
+    "description1": "es una plataforma global de anuncios clasificados gratuitos donde puedes anunciar lo que quieras - ¡completamente gratis!",
+    "description2": "A diferencia de las plataformas de publicidad caras, Tangle-me te permite publicar anuncios de solo texto para siempre sin pagar un centavo. ¿Quieres fotos? Solo $2.99/mes. ¿Tienes un negocio? Actualiza a nuestro plan empresarial por $9.99/mes.",
+    "description3": "Creemos que la publicidad debe ser accesible para todos, en todas partes. Por eso estamos construyendo una plataforma que crece naturalmente a través del boca a boca, conectando personas globalmente sin el precio premium.",
+    "tagline": "Simple. Global. Gratis.",
+    "button": "¡Entendido!"
+  },
+  "hero": {
+    "mainText": "Anuncia lo que quieras.....¡gratis!",
+    "subText": "(solo texto)"
+  },
+  "search": {
+    "heading": "Encuentra cualquier cosa, en cualquier lugar",
+    "placeholder": "¿Qué estás buscando?",
+    "button": "Buscar ahora",
+    "searching": "Buscando"
+  },
+  "dummy": {
+    "header": "Resultados de ejemplo - Así es como se ven tus anuncios"
+  },
+  "buttons": {
+    "contact": "Contacto",
+    "share": "Compartir",
+    "save": "Guardar en Mis Tangles",
+    "saveShort": "Guardar"
+  },
+  "features": {
+    "postFree": {
+      "title": "Publicar gratis",
+      "description": "Los anuncios de texto son siempre gratuitos"
+    },
+    "find": {
+      "title": "Encontrar",
+      "description": "Buscar por distancia o ubicación"
+    },
+    "myTangles": {
+      "title": "Mis tangles",
+      "description": "Guardar contactos de confianza"
+    }
+  },
+  "cta": {
+    "heading": "¿Listo para comenzar a anunciar?",
+    "subheading": "Únete a miles que encuentran lo que necesitan en Tangle-me",
+    "button": "Registrarse gratis"
+  },
+  "footer": {
+    "terms": "Términos",
+    "privacy": "Privacidad",
+    "support": "Soporte",
+    "copyright": "© 2025 Tangle-me. Todos los derechos reservados."
+  },
+  "share": {
+    "linkText": "Ver en Tangle-me (clasificados gratuitos)",
+    "copied": "✅ ¡Enlace copiado!\n\nAhora pégalo en:\n• WhatsApp\n• Signal\n• Telegram\n• Facebook\n• ¡Cualquier app de mensajería!",
+    "error": "No se pudo copiar el enlace. Inténtalo de nuevo."
+  },
+  "cookies": {
+    "message": "Usamos cookies para recordar tu preferencia de idioma.",
+    "accept": "Aceptar"
+  },
+"dummyListings": {
+    "buttonLabel": "prueba",
+    "modalTitle": "Anuncios de Ejemplo",
+    "listings": [
+      {
+        "title": "Apartamento de Lujo - Brooklyn Heights",
+        "description": "3 habitaciones, 2 baños, vista de la ciudad",
+        "location": "Brooklyn, Nueva York",
+        "country": "🇺🇸 EE.UU.",
+        "price": "$250.000",
+        "distance": "2,5 km",
+        "posted": "hace 2 días"
+      },
+      {
+        "title": "Jet Ejecutivo Embraer E-175",
+        "description": "Pocas horas de vuelo, excelente estado",
+        "location": "São Paulo",
+        "country": "🇧🇷 Brasil",
+        "price": "R$ 95.000.000",
+        "distance": "4,2 km",
+        "posted": "hace 1 semana"
+      },
+      {
+        "title": "Psiquiatra Clínico - Dr. Heinz Grubber",
+        "description": "Terapeuta licenciado, 15 años de experiencia",
+        "location": "Berlín",
+        "country": "🇩🇪 Alemania",
+        "price": "€120/sesión",
+        "distance": "1,8 km",
+        "posted": "hace 3 días"
+      },
+      {
+        "title": "iPhone 14 Pro - 256GB",
+        "description": "Negro espacial, desbloqueado, como nuevo",
+        "location": "Shanghái",
+        "country": "🇨🇳 China",
+        "price": "¥4.800",
+        "distance": "3,1 km",
+        "posted": "hace 5 días"
+      },
+      {
+        "title": "Toyota FJ Cruiser 2020",
+        "description": "4x4, bajo kilometraje, excelente estado",
+        "location": "Johannesburgo",
+        "country": "🇿🇦 Sudáfrica",
+        "price": "R 485.000",
+        "distance": "15 km",
+        "posted": "hace 1 semana"
+      }
+    ]
+  }}

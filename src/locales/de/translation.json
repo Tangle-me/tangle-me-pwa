@@ -1,0 +1,122 @@
+{
+  "brand": {
+    "name": "Tangle-me"
+  },
+  "header": {
+    "tagline": "Ihre zentrale Werbeagentur",
+    "about": "Über uns",
+    "login": "Anmelden",
+    "signup": "Registrieren"
+  },
+  "about": {
+    "title": "Über Tangle-me",
+    "description1": "ist eine kostenlose globale Kleinanzeigenplattform, auf der Sie alles kostenlos bewerben können!",
+    "description2": "Im Gegensatz zu teuren Werbeplattformen können Sie bei Tangle-me kostenlos Textanzeigen für immer schalten. Möchten Sie Fotos? Nur 2,99€/Monat. Führen Sie ein Unternehmen? Upgraden Sie auf unseren Business-Tarif für 9,99€/Monat.",
+    "description3": "Wir glauben, dass Werbung für alle und überall zugänglich sein sollte. Deshalb bauen wir eine Plattform auf, die auf natürliche Weise durch Mundpropaganda wächst und Menschen weltweit verbindet, ohne den Premium-Preis.",
+    "tagline": "Einfach. Global. Kostenlos.",
+    "button": "Verstanden!"
+  },
+  "hero": {
+    "mainText": "Werben Sie alles was Sie wollen.....kostenlos!",
+    "subText": "(nur Text)"
+  },
+  "search": {
+    "heading": "Finden Sie alles, überall",
+    "placeholder": "Wonach suchen Sie?",
+    "button": "Jetzt suchen",
+    "searching": "Suche läuft"
+  },
+  "dummy": {
+    "header": "Beispielergebnisse - So sehen Ihre Anzeigen aus"
+  },
+  "buttons": {
+    "contact": "Kontakt",
+    "share": "Teilen",
+    "save": "In Meine Tangles speichern",
+    "saveShort": "Speichern"
+  },
+  "features": {
+    "postFree": {
+      "title": "Kostenlos posten",
+      "description": "Textanzeigen sind immer kostenlos"
+    },
+    "find": {
+      "title": "Finden",
+      "description": "Suche nach Entfernung oder Standort"
+    },
+    "myTangles": {
+      "title": "Meine Tangles",
+      "description": "Vertrauenswürdige Kontakte speichern"
+    }
+  },
+  "cta": {
+    "heading": "Bereit zum Werben?",
+    "subheading": "Schließen Sie sich Tausenden an, die auf Tangle-me finden, was sie brauchen",
+    "button": "Kostenlos registrieren"
+  },
+  "footer": {
+    "terms": "Bedingungen",
+    "privacy": "Datenschutz",
+    "support": "Support",
+    "copyright": "© 2025 Tangle-me. Alle Rechte vorbehalten."
+  },
+  "share": {
+    "linkText": "Auf Tangle-me ansehen (kostenlose Kleinanzeigen)",
+    "copied": "✅ Link kopiert!\n\nJetzt einfügen in:\n• WhatsApp\n• Signal\n• Telegram\n• Facebook\n• Jede Messaging-App!",
+    "error": "Link konnte nicht kopiert werden. Bitte versuchen Sie es erneut."
+  },
+  "cookies": {
+    "message": "Wir verwenden Cookies, um Ihre Sprachpräferenz zu speichern.",
+    "accept": "Akzeptieren"
+  },
+"dummyListings": {
+    "buttonLabel": "test",
+    "modalTitle": "Beispiel-Anzeigen",
+    "listings": [
+      {
+        "title": "Luxus-Apartment - Brooklyn Heights",
+        "description": "3 Schlafzimmer, 2 Bäder, Stadtblick",
+        "location": "Brooklyn, New York",
+        "country": "🇺🇸 USA",
+        "price": "$250.000",
+        "distance": "2,5 km",
+        "posted": "vor 2 Tagen"
+      },
+      {
+        "title": "Embraer Executive Jet E-175",
+        "description": "Wenig Flugstunden, hervorragender Zustand",
+        "location": "São Paulo",
+        "country": "🇧🇷 Brasilien",
+        "price": "R$ 95.000.000",
+        "distance": "4,2 km",
+        "posted": "vor 1 Woche"
+      },
+      {
+        "title": "Klinischer Psychiater - Dr. Heinz Grubber",
+        "description": "Zugelassener Therapeut, 15 Jahre Erfahrung",
+        "location": "Berlin",
+        "country": "🇩🇪 Deutschland",
+        "price": "€120/Sitzung",
+        "distance": "1,8 km",
+        "posted": "vor 3 Tagen"
+      },
+      {
+        "title": "iPhone 14 Pro - 256GB",
+        "description": "Space Schwarz, entsperrt, wie neu",
+        "location": "Shanghai",
+        "country": "🇨🇳 China",
+        "price": "¥4.800",
+        "distance": "3,1 km",
+        "posted": "vor 5 Tagen"
+      },
+      {
+        "title": "Toyota FJ Cruiser 2020",
+        "description": "4x4, niedrige Laufleistung, ausgezeichneter Zustand",
+        "location": "Johannesburg",
+        "country": "🇿🇦 Südafrika",
+        "price": "R 485.000",
+        "distance": "15 km",
+        "posted": "vor 1 Woche"
+      }
+    ]
+  }}

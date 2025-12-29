@@ -1,0 +1,122 @@
+{
+  "brand": {
+    "name": "Tangle-me"
+  },
+  "header": {
+    "tagline": "Votre agence de publicité complète",
+    "about": "À propos",
+    "login": "Se connecter",
+    "signup": "S'inscrire"
+  },
+  "about": {
+    "title": "À propos de Tangle-me",
+    "description1": "est une plateforme mondiale de petites annonces gratuites où vous pouvez faire de la publicité pour tout ce que vous voulez - complètement gratuit !",
+    "description2": "Contrairement aux plateformes publicitaires coûteuses, Tangle-me vous permet de publier des annonces texte pour toujours sans payer un centime. Vous voulez des photos ? Seulement 2,99€/mois. Vous dirigez une entreprise ? Passez à notre forfait professionnel à 9,99€/mois.",
+    "description3": "Nous croyons que la publicité devrait être accessible à tous, partout. C'est pourquoi nous construisons une plateforme qui se développe naturellement grâce au bouche-à-oreille, connectant les gens dans le monde entier sans le prix premium.",
+    "tagline": "Simple. Mondial. Gratuit.",
+    "button": "Compris !"
+  },
+  "hero": {
+    "mainText": "Annoncez ce que vous voulez.....gratuitement !",
+    "subText": "(texte uniquement)"
+  },
+  "search": {
+    "heading": "Trouvez n'importe quoi, n'importe où",
+    "placeholder": "Que cherchez-vous ?",
+    "button": "Rechercher maintenant",
+    "searching": "Recherche en cours"
+  },
+  "dummy": {
+    "header": "Résultats d'exemple - Voici à quoi ressemblent vos annonces"
+  },
+  "buttons": {
+    "contact": "Contact",
+    "share": "Partager",
+    "save": "Enregistrer dans Mes Tangles",
+    "saveShort": "Enregistrer"
+  },
+  "features": {
+    "postFree": {
+      "title": "Publier gratuitement",
+      "description": "Les annonces texte sont toujours gratuites"
+    },
+    "find": {
+      "title": "Trouver",
+      "description": "Rechercher par distance ou emplacement"
+    },
+    "myTangles": {
+      "title": "Mes tangles",
+      "description": "Enregistrer les contacts de confiance"
+    }
+  },
+  "cta": {
+    "heading": "Prêt à commencer à faire de la publicité ?",
+    "subheading": "Rejoignez des milliers de personnes qui trouvent ce dont elles ont besoin sur Tangle-me",
+    "button": "S'inscrire gratuitement"
+  },
+  "footer": {
+    "terms": "Conditions",
+    "privacy": "Confidentialité",
+    "support": "Support",
+    "copyright": "© 2025 Tangle-me. Tous droits réservés."
+  },
+  "share": {
+    "linkText": "Voir sur Tangle-me (petites annonces gratuites)",
+    "copied": "✅ Lien copié !\n\nCollez-le maintenant dans :\n• WhatsApp\n• Signal\n• Telegram\n• Facebook\n• N'importe quelle application de messagerie !",
+    "error": "Impossible de copier le lien. Veuillez réessayer."
+  },
+  "cookies": {
+    "message": "Nous utilisons des cookies pour mémoriser votre préférence de langue.",
+    "accept": "Accepter"
+  },
+"dummyListings": {
+    "buttonLabel": "test",
+    "modalTitle": "Annonces d'Exemple",
+    "listings": [
+      {
+        "title": "Appartement de Luxe - Brooklyn Heights",
+        "description": "3 chambres, 2 salles de bain, vue sur la ville",
+        "location": "Brooklyn, New York",
+        "country": "🇺🇸 États-Unis",
+        "price": "$250.000",
+        "distance": "2,5 km",
+        "posted": "il y a 2 jours"
+      },
+      {
+        "title": "Jet Exécutif Embraer E-175",
+        "description": "Peu d'heures de vol, excellent état",
+        "location": "São Paulo",
+        "country": "🇧🇷 Brésil",
+        "price": "R$ 95.000.000",
+        "distance": "4,2 km",
+        "posted": "il y a 1 semaine"
+      },
+      {
+        "title": "Psychiatre Clinique - Dr. Heinz Grubber",
+        "description": "Thérapeute agréé, 15 ans d'expérience",
+        "location": "Berlin",
+        "country": "🇩🇪 Allemagne",
+        "price": "€120/séance",
+        "distance": "1,8 km",
+        "posted": "il y a 3 jours"
+      },
+      {
+        "title": "iPhone 14 Pro - 256GB",
+        "description": "Noir sidéral, déverrouillé, comme neuf",
+        "location": "Shanghai",
+        "country": "🇨🇳 Chine",
+        "price": "¥4.800",
+        "distance": "3,1 km",
+        "posted": "il y a 5 jours"
+      },
+      {
+        "title": "Toyota FJ Cruiser 2020",
+        "description": "4x4, faible kilométrage, excellent état",
+        "location": "Johannesburg",
+        "country": "🇿🇦 Afrique du Sud",
+        "price": "R 485.000",
+        "distance": "15 km",
+        "posted": "il y a 1 semaine"
+      }
+    ]
+  }}

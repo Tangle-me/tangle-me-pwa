@@ -1,0 +1,123 @@
+{
+  "brand": {
+    "name": "Tangle-me"
+  },
+  "header": {
+    "tagline": "あなたのワンストップ広告代理店",
+    "about": "概要",
+    "login": "ログイン",
+    "signup": "登録"
+  },
+  "about": {
+    "title": "Tangle-meについて",
+    "description1": "は、何でも無料で宣伝できるグローバルな無料クラシファイド・プラットフォームです！",
+    "description2": "高価な広告プラットフォームとは異なり、Tangle-meではテキストのみの広告を永久に無料で投稿できます。写真が必要ですか？月額わずか399円。ビジネスをしていますか？月額999円でビジネスプランにアップグレードしてください。",
+    "description3": "私たちは、広告はすべての人、どこでもアクセス可能であるべきだと信じています。そのため、口コミで自然に成長し、プレミアム価格なしで世界中の人々を繋ぐプラットフォームを構築しています。",
+    "tagline": "シンプル。グローバル。無料。",
+    "button": "了解！"
+  },
+  "hero": {
+    "mainText": "何でも宣伝しよう.....無料で！",
+    "subText": "（テキストのみ）"
+  },
+  "search": {
+    "heading": "何でも、どこでも見つけよう",
+    "placeholder": "何をお探しですか？",
+    "button": "今すぐ検索",
+    "searching": "検索中"
+  },
+  "dummy": {
+    "header": "サンプル結果 - あなたの広告はこのように表示されます"
+  },
+  "buttons": {
+    "contact": "連絡",
+    "share": "共有",
+    "save": "マイ・タングルに保存",
+    "saveShort": "保存"
+  },
+  "features": {
+    "postFree": {
+      "title": "無料投稿",
+      "description": "テキスト広告は常に無料"
+    },
+    "find": {
+      "title": "検索",
+      "description": "距離または場所で検索"
+    },
+    "myTangles": {
+      "title": "マイ・タングル",
+      "description": "信頼できる連絡先を保存"
+    }
+  },
+  "cta": {
+    "heading": "広告を始める準備はできましたか？",
+    "subheading": "Tangle-meで必要なものを見つけている何千人もの人々に参加しましょう",
+    "button": "無料登録"
+  },
+  "footer": {
+    "terms": "利用規約",
+    "privacy": "プライバシー",
+    "support": "サポート",
+    "copyright": "© 2025 Tangle-me. 無断複写・転載を禁じます。"
+  },
+  "share": {
+    "linkText": "Tangle-meで見る（無料クラシファイド）",
+    "copied": "✅ リンクをコピーしました！\n\n以下に貼り付けてください：\n• WhatsApp\n• Signal\n• Telegram\n• Facebook\n• 任意のメッセージアプリ！",
+    "error": "リンクをコピーできませんでした。もう一度お試しください。"
+  },
+  "cookies": {
+    "message": "言語設定を記憶するためにCookieを使用しています。",
+    "accept": "承諾"
+  },
+  "dummyListings": {
+    "buttonLabel": "テスト",
+    "modalTitle": "サンプル広告",
+    "listings": [
+      {
+        "title": "高級アパート - ブルックリンハイツ",
+        "description": "3ベッドルーム、2バスルーム、街の景色",
+        "location": "ブルックリン、ニューヨーク",
+        "country": "🇺🇸 アメリカ",
+        "price": "$250,000",
+        "distance": "2.5 km",
+        "posted": "2日前"
+      },
+      {
+        "title": "エンブラエル エグゼクティブジェット E-175",
+        "description": "低飛行時間、優れた状態",
+        "location": "サンパウロ",
+        "country": "🇧🇷 ブラジル",
+        "price": "R$ 95,000,000",
+        "distance": "4.2 km",
+        "posted": "1週間前"
+      },
+      {
+        "title": "臨床精神科医 - ハインツ・グルーバー博士",
+        "description": "認定セラピスト、15年の経験",
+        "location": "ベルリン",
+        "country": "🇩🇪 ドイツ",
+        "price": "€120/セッション",
+        "distance": "1.8 km",
+        "posted": "3日前"
+      },
+      {
+        "title": "iPhone 14 Pro - 256GB",
+        "description": "スペースブラック、SIMフリー、新品同様",
+        "location": "上海",
+        "country": "🇨🇳 中国",
+        "price": "¥4,800",
+        "distance": "3.1 km",
+        "posted": "5日前"
+      },
+      {
+        "title": "トヨタ FJクルーザー 2020",
+        "description": "4x4、低走行距離、優れた状態",
+        "location": "ヨハネスブルグ",
+        "country": "🇿🇦 南アフリカ",
+        "price": "R 485,000",
+        "distance": "15 km",
+        "posted": "1週間前"
+      }
+    ]
+  }
+}
