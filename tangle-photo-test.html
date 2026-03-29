@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Tangle-me Photo Test</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0f0e17;
+    --surface: #1a1830;
+    --card: #221f3a;
+    --accent: #7f5af0;
+    --accent2: #e056a0;
+    --text: #fffffe;
+    --text2: #94a1b2;
+    --success: #2cb67d;
+    --danger: #e53170;
+    --radius: 14px;
+  }
+
+  html, body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100dvh;
+    overflow-x: hidden;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Header */
+  .header {
+    position: sticky; top: 0; z-index: 100;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    padding: 1rem 1.25rem;
+    display: flex; align-items: center; gap: 0.75rem;
+    box-shadow: 0 4px 24px rgba(127,90,240,0.3);
+  }
+  .header h1 { font-size: 1.15rem; font-weight: 700; letter-spacing: -0.02em; }
+  .header .badge {
+    background: rgba(255,255,255,0.2);
+    padding: 0.2rem 0.6rem;
+    border-radius: 20px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    backdrop-filter: blur(4px);
+  }
+
+  /* Main */
+  .container { max-width: 480px; margin: 0 auto; padding: 1.25rem; }
+
+  /* Section card */
+  .section {
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 1.25rem;
+    margin-bottom: 1.25rem;
+    border: 1px solid rgba(127,90,240,0.15);
+  }
+  .section h2 {
+    font-size: 0.95rem; font-weight: 700;
+    margin-bottom: 0.75rem;
+    display: flex; align-items: center; gap: 0.5rem;
+  }
+  .section p { font-size: 0.82rem; color: var(--text2); line-height: 1.5; margin-bottom: 0.75rem; }
+
+  /* Upload zone */
+  .upload-zone {
+    border: 2px dashed rgba(127,90,240,0.4);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    background: rgba(127,90,240,0.05);
+  }
+  .upload-zone:hover, .upload-zone:active {
+    border-color: var(--accent);
+    background: rgba(127,90,240,0.12);
+    transform: scale(0.985);
+  }
+  .upload-zone .icon { font-size: 2rem; margin-bottom: 0.5rem; }
+  .upload-zone .label { font-size: 0.85rem; font-weight: 600; color: var(--text); }
+  .upload-zone .hint { font-size: 0.72rem; color: var(--text2); margin-top: 0.3rem; }
+
+  /* Preview grid */
+  .preview-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+    gap: 0.5rem;
+    margin-top: 1rem;
+  }
+  .preview-item {
+    position: relative;
+    aspect-ratio: 1;
+    border-radius: 10px;
+    overflow: hidden;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: all 0.2s ease;
+  }
+  .preview-item:hover { border-color: var(--accent); transform: scale(1.04); }
+  .preview-item img {
+    width: 100%; height: 100%; object-fit: cover;
+    display: block;
+  }
+  .preview-item .num {
+    position: absolute; top: 4px; left: 4px;
+    background: rgba(0,0,0,0.7);
+    color: #fff;
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    font-size: 0.65rem; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .preview-item .remove {
+    position: absolute; top: 4px; right: 4px;
+    background: var(--danger);
+    color: #fff;
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    border: none;
+    font-size: 0.75rem;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; transition: opacity 0.2s;
+  }
+  .preview-item:hover .remove { opacity: 1; }
+
+  /* Buttons */
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem;
+    padding: 0.7rem 1.4rem;
+    border: none; border-radius: 50px;
+    font-family: inherit; font-size: 0.85rem; font-weight: 600;
+    cursor: pointer; transition: all 0.2s ease;
+    width: 100%;
+  }
+  .btn-primary {
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #fff;
+    box-shadow: 0 4px 16px rgba(127,90,240,0.35);
+  }
+  .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 24px rgba(127,90,240,0.45); }
+  .btn-primary:disabled { opacity: 0.4; pointer-events: none; }
+  .btn-secondary {
+    background: rgba(127,90,240,0.15);
+    color: var(--accent);
+    border: 1px solid rgba(127,90,240,0.3);
+  }
+
+  /* Status bar */
+  .status-bar {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 0.5rem 0;
+    font-size: 0.78rem;
+    color: var(--text2);
+  }
+  .count-badge {
+    background: var(--accent);
+    color: #fff;
+    padding: 0.15rem 0.55rem;
+    border-radius: 20px;
+    font-weight: 700;
+    font-size: 0.72rem;
+  }
+
+  /* Posted ad card */
+  .ad-card {
+    background: var(--surface);
+    border-radius: var(--radius);
+    overflow: hidden;
+    border: 1px solid rgba(127,90,240,0.12);
+    display: none;
+  }
+  .ad-card.visible { display: block; animation: slideUp 0.4s ease; }
+  .ad-card .ad-main-photo {
+    width: 100%;
+    aspect-ratio: 16/10;
+    object-fit: cover;
+    cursor: pointer;
+    display: block;
+  }
+  .ad-card .ad-thumb-strip {
+    display: flex; gap: 4px; padding: 6px;
+    overflow-x: auto;
+    background: var(--card);
+    scrollbar-width: none;
+  }
+  .ad-card .ad-thumb-strip::-webkit-scrollbar { display: none; }
+  .ad-card .ad-thumb {
+    width: 52px; height: 52px; flex-shrink: 0;
+    border-radius: 8px; object-fit: cover;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: border-color 0.15s;
+    opacity: 0.7;
+  }
+  .ad-card .ad-thumb.active { border-color: var(--accent); opacity: 1; }
+  .ad-card .ad-info { padding: 1rem; }
+  .ad-card .ad-title { font-size: 0.9rem; font-weight: 700; margin-bottom: 0.3rem; }
+  .ad-card .ad-meta { font-size: 0.75rem; color: var(--text2); }
+
+  /* ======== LIGHTBOX ======== */
+  .lightbox-overlay {
+    position: fixed; inset: 0; z-index: 99999;
+    background: rgba(0,0,0,0.95);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    opacity: 0; visibility: hidden;
+    transition: opacity 0.25s, visibility 0.25s;
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  .lightbox-overlay.active { opacity: 1; visibility: visible; }
+
+  .lb-topbar {
+    position: absolute; top: 0; left: 0; right: 0;
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 0.75rem 1rem;
+    background: linear-gradient(to bottom, rgba(0,0,0,0.7), transparent);
+    z-index: 2;
+  }
+  .lb-counter { font-size: 0.85rem; font-weight: 600; color: rgba(255,255,255,0.9); }
+  .lb-close {
+    background: rgba(255,255,255,0.15);
+    border: none; color: #fff;
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    font-size: 1.2rem;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    backdrop-filter: blur(4px);
+    transition: background 0.2s;
+  }
+  .lb-close:hover { background: rgba(255,255,255,0.3); }
+
+  .lb-image-wrap {
+    position: relative;
+    width: 100%; height: 100%;
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden;
+  }
+  .lb-image-track {
+    display: flex;
+    transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    will-change: transform;
+    height: 100%;
+    align-items: center;
+  }
+  .lb-slide {
+    min-width: 100vw;
+    display: flex; align-items: center; justify-content: center;
+    padding: 3rem 0.75rem;
+  }
+  .lb-slide img {
+    max-width: 100%; max-height: 80vh;
+    object-fit: contain;
+    border-radius: 6px;
+    pointer-events: none;
+  }
+
+  /* Desktop arrows */
+  .lb-arrow {
+    position: absolute; top: 50%; transform: translateY(-50%);
+    background: rgba(255,255,255,0.12);
+    border: none; color: #fff;
+    width: 48px; height: 48px;
+    border-radius: 50%;
+    font-size: 1.4rem;
+    cursor: pointer;
+    z-index: 3;
+    backdrop-filter: blur(4px);
+    transition: background 0.2s, opacity 0.2s;
+    display: none;
+  }
+  .lb-arrow:hover { background: rgba(255,255,255,0.25); }
+  .lb-prev { left: 12px; }
+  .lb-next { right: 12px; }
+  @media (min-width: 768px) {
+    .lb-arrow { display: flex; align-items: center; justify-content: center; }
+  }
+
+  /* Dot indicators */
+  .lb-dots {
+    position: absolute; bottom: 1rem;
+    display: flex; gap: 6px; z-index: 2;
+  }
+  .lb-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.3);
+    transition: all 0.25s;
+  }
+  .lb-dot.active {
+    background: var(--accent);
+    width: 22px;
+    border-radius: 4px;
+  }
+
+  /* Swipe hint */
+  .swipe-hint {
+    position: absolute; bottom: 3rem;
+    font-size: 0.72rem; color: rgba(255,255,255,0.4);
+    animation: fadeOut 3s 1.5s forwards;
+  }
+
+  /* Toast */
+  .toast {
+    position: fixed; bottom: 5rem; left: 50%; transform: translateX(-50%) translateY(20px);
+    background: var(--success);
+    color: #fff;
+    padding: 0.6rem 1.2rem;
+    border-radius: 50px;
+    font-size: 0.82rem; font-weight: 600;
+    opacity: 0;
+    transition: all 0.3s ease;
+    z-index: 100000;
+    white-space: nowrap;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* Test photo strip (pre-loaded samples) */
+  .sample-strip {
+    display: flex; gap: 6px;
+    overflow-x: auto;
+    padding: 0.5rem 0;
+    scrollbar-width: none;
+  }
+  .sample-strip::-webkit-scrollbar { display: none; }
+  .sample-thumb {
+    width: 64px; height: 64px; flex-shrink: 0;
+    border-radius: 10px; object-fit: cover;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: all 0.2s;
+  }
+  .sample-thumb.selected { border-color: var(--success); opacity: 1; }
+  .sample-thumb:not(.selected) { opacity: 0.5; }
+
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeOut {
+    to { opacity: 0; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Tangle-me Photo Test</h1>
+  <span class="badge">PRO</span>
+</div>
+
+<div class="container">
+
+  <!-- TEST 1: Upload from Gallery -->
+  <div class="section">
+    <h2>📱 Test 1: Select from Gallery</h2>
+    <p>Tap below to open your phone gallery. You should be able to <strong>select multiple photos</strong> at once. If you can only pick one, the <code>multiple</code> attribute is missing.</p>
+
+    <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()">
+      <div class="icon">📷</div>
+      <div class="label">Tap to select photos</div>
+      <div class="hint">Select as many as you want</div>
+    </div>
+    <!-- THE KEY: multiple attribute -->
+    <input type="file" id="fileInput" accept="image/*" multiple style="display:none" onchange="handleFileSelect(event)">
+
+    <div class="status-bar" id="uploadStatus" style="display:none">
+      <span>Selected: <span class="count-badge" id="selectedCount">0</span></span>
+      <span id="selectedSize"></span>
+    </div>
+    <div class="preview-grid" id="uploadPreview"></div>
+
+    <div style="margin-top:1rem" id="postBtnWrap" hidden>
+      <button class="btn btn-primary" id="postBtn" onclick="postAd()">Post Ad with these photos</button>
+    </div>
+  </div>
+
+  <!-- TEST 2: Pre-loaded 10 Sample Photos -->
+  <div class="section">
+    <h2>🎨 Test 2: 10 Sample Photos</h2>
+    <p>These 10 photos are auto-generated. Tap <strong>"Load as Ad"</strong> to simulate a posted ad, then tap the main photo to open the lightbox and swipe through them.</p>
+
+    <div class="sample-strip" id="sampleStrip"></div>
+
+    <div style="margin-top:0.75rem">
+      <button class="btn btn-secondary" onclick="loadSampleAd()">Load as Ad</button>
+    </div>
+  </div>
+
+  <!-- POSTED AD (appears after posting) -->
+  <div class="section" style="padding:0; border:none; background:transparent;">
+    <div class="ad-card" id="adCard">
+      <img class="ad-main-photo" id="adMainPhoto" onclick="openLightbox(currentMainIndex)">
+      <div class="ad-thumb-strip" id="adThumbStrip"></div>
+      <div class="ad-info">
+        <div class="ad-title">Test Ad — Photo Viewer Check</div>
+        <div class="ad-meta">Ad #TEST · Just now · <span id="adPhotoCount">0</span> photos</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- LIGHTBOX -->
+<div class="lightbox-overlay" id="lightbox">
+  <div class="lb-topbar">
+    <span class="lb-counter" id="lbCounter">1 / 10</span>
+    <button class="lb-close" onclick="closeLightbox()">✕</button>
+  </div>
+  <div class="lb-image-wrap">
+    <div class="lb-image-track" id="lbTrack"></div>
+  </div>
+  <button class="lb-arrow lb-prev" id="lbPrev" onclick="lbGo(-1)">‹</button>
+  <button class="lb-arrow lb-next" id="lbNext" onclick="lbGo(1)">›</button>
+  <div class="lb-dots" id="lbDots"></div>
+  <div class="swipe-hint" id="swipeHint">← swipe to browse →</div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ======================
+// STATE
+// ======================
+let adPhotos = [];         // URLs for the "posted" ad
+let currentMainIndex = 0;  // which photo is shown as main
+let lbIndex = 0;           // lightbox current index
+let touchStartX = 0;
+let touchDelta = 0;
+let isSwiping = false;
+
+// ======================
+// GENERATE 10 SAMPLE IMAGES
+// ======================
+const sampleImages = [];
+
+function generateSamplePhotos() {
+  const subjects = [
+    { bg: '#1a237e', fg: '#bbdefb', label: 'Living Room',  icon: '🛋️' },
+    { bg: '#b71c1c', fg: '#ffcdd2', label: 'Kitchen',      icon: '🍳' },
+    { bg: '#1b5e20', fg: '#c8e6c9', label: 'Garden',       icon: '🌿' },
+    { bg: '#e65100', fg: '#ffe0b2', label: 'Bedroom',       icon: '🛏️' },
+    { bg: '#4a148c', fg: '#e1bee7', label: 'Bathroom',      icon: '🚿' },
+    { bg: '#006064', fg: '#b2ebf2', label: 'Pool',          icon: '🏊' },
+    { bg: '#33691e', fg: '#dcedc8', label: 'Exterior',      icon: '🏠' },
+    { bg: '#bf360c', fg: '#ffccbc', label: 'Garage',        icon: '🚗' },
+    { bg: '#0d47a1', fg: '#90caf9', label: 'View',          icon: '🌅' },
+    { bg: '#880e4f', fg: '#f8bbd0', label: 'Balcony',       icon: '🌆' },
+  ];
+
+  const strip = document.getElementById('sampleStrip');
+
+  subjects.forEach((s, i) => {
+    const c = document.createElement('canvas');
+    c.width = 600; c.height = 450;
+    const ctx = c.getContext('2d');
+
+    // Background gradient
+    const grad = ctx.createLinearGradient(0, 0, 600, 450);
+    grad.addColorStop(0, s.bg);
+    grad.addColorStop(1, adjustColor(s.bg, 40));
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, 600, 450);
+
+    // Decorative shapes
+    ctx.globalAlpha = 0.1;
+    for (let j = 0; j < 5; j++) {
+      ctx.beginPath();
+      ctx.arc(Math.random()*600, Math.random()*450, 40+Math.random()*80, 0, Math.PI*2);
+      ctx.fillStyle = '#fff';
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+
+    // Icon
+    ctx.font = '80px serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(s.icon, 300, 200);
+
+    // Label
+    ctx.font = 'bold 32px "DM Sans", sans-serif';
+    ctx.fillStyle = s.fg;
+    ctx.fillText(s.label, 300, 280);
+
+    // Number badge
+    ctx.font = 'bold 20px "DM Sans", sans-serif';
+    ctx.fillStyle = 'rgba(255,255,255,0.4)';
+    ctx.fillText(`Photo ${i + 1} of 10`, 300, 320);
+
+    // Tangle-me watermark
+    ctx.font = '14px "DM Sans", sans-serif';
+    ctx.fillStyle = 'rgba(255,255,255,0.2)';
+    ctx.fillText('tangle-me.com', 300, 430);
+
+    const url = c.toDataURL('image/jpeg', 0.85);
+    sampleImages.push(url);
+
+    // Thumbnail in strip
+    const img = document.createElement('img');
+    img.src = url;
+    img.className = 'sample-thumb selected';
+    img.onclick = () => {
+      img.classList.toggle('selected');
+    };
+    strip.appendChild(img);
+  });
+}
+
+function adjustColor(hex, amount) {
+  let r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
+  r = Math.min(255, r + amount); g = Math.min(255, g + amount); b = Math.min(255, b + amount);
+  return `rgb(${r},${g},${b})`;
+}
+
+// ======================
+// FILE SELECT (Test 1)
+// ======================
+function handleFileSelect(e) {
+  const files = Array.from(e.target.files);
+  if (!files.length) return;
+
+  adPhotos = [];
+  const grid = document.getElementById('uploadPreview');
+  grid.innerHTML = '';
+
+  let totalSize = 0;
+  files.forEach((f, i) => {
+    totalSize += f.size;
+    const url = URL.createObjectURL(f);
+    adPhotos.push(url);
+
+    const item = document.createElement('div');
+    item.className = 'preview-item';
+    item.innerHTML = `
+      <img src="${url}" alt="Photo ${i+1}">
+      <span class="num">${i+1}</span>
+      <button class="remove" onclick="removeUpload(${i}, event)">✕</button>
+    `;
+    item.onclick = (ev) => {
+      if (ev.target.tagName === 'BUTTON') return;
+      openLightbox(i);
+    };
+    grid.appendChild(item);
+  });
+
+  document.getElementById('uploadStatus').style.display = 'flex';
+  document.getElementById('selectedCount').textContent = files.length;
+  document.getElementById('selectedSize').textContent = (totalSize / 1024 / 1024).toFixed(1) + ' MB';
+  document.getElementById('postBtnWrap').hidden = false;
+
+  toast(`${files.length} photo${files.length > 1 ? 's' : ''} selected`);
+}
+
+function removeUpload(idx, e) {
+  e.stopPropagation();
+  adPhotos.splice(idx, 1);
+  renderUploadPreview();
+}
+
+function renderUploadPreview() {
+  const grid = document.getElementById('uploadPreview');
+  grid.innerHTML = '';
+  adPhotos.forEach((url, i) => {
+    const item = document.createElement('div');
+    item.className = 'preview-item';
+    item.innerHTML = `
+      <img src="${url}" alt="Photo ${i+1}">
+      <span class="num">${i+1}</span>
+      <button class="remove" onclick="removeUpload(${i}, event)">✕</button>
+    `;
+    item.onclick = (ev) => {
+      if (ev.target.tagName === 'BUTTON') return;
+      openLightbox(i);
+    };
+    grid.appendChild(item);
+  });
+  document.getElementById('selectedCount').textContent = adPhotos.length;
+  if (!adPhotos.length) {
+    document.getElementById('uploadStatus').style.display = 'none';
+    document.getElementById('postBtnWrap').hidden = true;
+  }
+}
+
+// ======================
+// POST AD (shows card)
+// ======================
+function postAd() {
+  if (!adPhotos.length) return;
+  showAdCard(adPhotos);
+  toast('Ad posted with ' + adPhotos.length + ' photos!');
+}
+
+function loadSampleAd() {
+  const selectedThumbs = document.querySelectorAll('.sample-thumb.selected');
+  const urls = [];
+  selectedThumbs.forEach(img => urls.push(img.src));
+  if (!urls.length) { toast('Select at least one sample photo'); return; }
+  adPhotos = urls;
+  showAdCard(urls);
+  toast('Sample ad loaded with ' + urls.length + ' photos');
+}
+
+function showAdCard(photos) {
+  currentMainIndex = 0;
+  const card = document.getElementById('adCard');
+  card.classList.add('visible');
+
+  document.getElementById('adMainPhoto').src = photos[0];
+  document.getElementById('adPhotoCount').textContent = photos.length;
+
+  const strip = document.getElementById('adThumbStrip');
+  strip.innerHTML = '';
+  photos.forEach((url, i) => {
+    const img = document.createElement('img');
+    img.src = url;
+    img.className = 'ad-thumb' + (i === 0 ? ' active' : '');
+    img.onclick = () => {
+      currentMainIndex = i;
+      document.getElementById('adMainPhoto').src = url;
+      strip.querySelectorAll('.ad-thumb').forEach((t, j) => t.classList.toggle('active', j === i));
+    };
+    strip.appendChild(img);
+  });
+
+  card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+// ======================
+// LIGHTBOX
+// ======================
+function openLightbox(startIdx) {
+  if (!adPhotos.length) return;
+  lbIndex = startIdx || 0;
+  const lb = document.getElementById('lightbox');
+  const track = document.getElementById('lbTrack');
+
+  // Build slides
+  track.innerHTML = '';
+  adPhotos.forEach((url, i) => {
+    const slide = document.createElement('div');
+    slide.className = 'lb-slide';
+    slide.innerHTML = `<img src="${url}" alt="Photo ${i+1}" draggable="false">`;
+    track.appendChild(slide);
+  });
+
+  // Build dots
+  const dots = document.getElementById('lbDots');
+  dots.innerHTML = '';
+  adPhotos.forEach((_, i) => {
+    const dot = document.createElement('div');
+    dot.className = 'lb-dot' + (i === lbIndex ? ' active' : '');
+    dot.onclick = () => lbGoTo(i);
+    dots.appendChild(dot);
+  });
+
+  lbUpdate();
+  lb.classList.add('active');
+  document.body.style.overflow = 'hidden';
+
+  // Show/hide arrows
+  document.getElementById('lbPrev').style.display = adPhotos.length > 1 ? '' : 'none';
+  document.getElementById('lbNext').style.display = adPhotos.length > 1 ? '' : 'none';
+  document.getElementById('swipeHint').style.display = adPhotos.length > 1 ? '' : 'none';
+}
+
+function closeLightbox() {
+  document.getElementById('lightbox').classList.remove('active');
+  document.body.style.overflow = '';
+}
+
+function lbGo(dir) {
+  lbGoTo(lbIndex + dir);
+}
+
+function lbGoTo(idx) {
+  if (idx < 0) idx = 0;
+  if (idx >= adPhotos.length) idx = adPhotos.length - 1;
+  lbIndex = idx;
+  lbUpdate();
+}
+
+function lbUpdate() {
+  const track = document.getElementById('lbTrack');
+  track.style.transition = 'transform 0.3s cubic-bezier(0.25,0.46,0.45,0.94)';
+  track.style.transform = `translateX(-${lbIndex * 100}vw)`;
+
+  document.getElementById('lbCounter').textContent = `${lbIndex + 1} / ${adPhotos.length}`;
+
+  document.querySelectorAll('.lb-dot').forEach((d, i) => d.classList.toggle('active', i === lbIndex));
+
+  // Arrow visibility
+  document.getElementById('lbPrev').style.opacity = lbIndex === 0 ? '0.3' : '1';
+  document.getElementById('lbNext').style.opacity = lbIndex === adPhotos.length - 1 ? '0.3' : '1';
+}
+
+// ======================
+// SWIPE HANDLING
+// ======================
+document.getElementById('lightbox').addEventListener('touchstart', (e) => {
+  touchStartX = e.touches[0].clientX;
+  touchDelta = 0;
+  isSwiping = true;
+  document.getElementById('lbTrack').style.transition = 'none';
+}, { passive: true });
+
+document.getElementById('lightbox').addEventListener('touchmove', (e) => {
+  if (!isSwiping) return;
+  touchDelta = e.touches[0].clientX - touchStartX;
+  const offset = -(lbIndex * window.innerWidth) + touchDelta;
+  document.getElementById('lbTrack').style.transform = `translateX(${offset}px)`;
+}, { passive: true });
+
+document.getElementById('lightbox').addEventListener('touchend', () => {
+  if (!isSwiping) return;
+  isSwiping = false;
+
+  const threshold = window.innerWidth * 0.2;
+  if (touchDelta < -threshold && lbIndex < adPhotos.length - 1) {
+    lbGo(1);
+  } else if (touchDelta > threshold && lbIndex > 0) {
+    lbGo(-1);
+  } else {
+    lbUpdate(); // snap back
+  }
+}, { passive: true });
+
+// Keyboard
+document.addEventListener('keydown', (e) => {
+  if (!document.getElementById('lightbox').classList.contains('active')) return;
+  if (e.key === 'Escape') closeLightbox();
+  if (e.key === 'ArrowLeft') lbGo(-1);
+  if (e.key === 'ArrowRight') lbGo(1);
+});
+
+// Close on overlay click (not on image)
+document.getElementById('lightbox').addEventListener('click', (e) => {
+  if (e.target === document.getElementById('lightbox') ||
+      e.target.classList.contains('lb-image-wrap')) {
+    closeLightbox();
+  }
+});
+
+// ======================
+// TOAST
+// ======================
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// ======================
+// INIT
+// ======================
+generateSamplePhotos();
+</script>
+</body>
+</html>

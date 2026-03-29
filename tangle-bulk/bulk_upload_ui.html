@@ -1,0 +1,286 @@
+<!--
+  Tangle-me Universal Bulk Upload UI
+  ====================================
+  Save as bulk_upload_ui.php and include it in your dashboard:
+    <?php include 'bulk_upload_ui.php'; ?>
+
+  The <script> block at the bottom posts to bulk_upload.php.
+  Change the fetch URL if your file lives in a subfolder.
+-->
+
+<!-- TRIGGER BUTTON — place wherever you want it -->
+<button id="tmBulkBtn" class="tm-bulk-btn" type="button">
+    📦 Bulk Upload Ads
+</button>
+
+<!-- MODAL -->
+<div id="tmModal" class="tm-overlay" style="display:none" role="dialog" aria-modal="true">
+  <div class="tm-modal">
+
+    <div class="tm-modal-head">
+      <h2>📦 Bulk Upload Ads</h2>
+      <button id="tmClose" class="tm-x" aria-label="Close">&#10005;</button>
+    </div>
+
+    <!-- STEP 1: Drop zone -->
+    <div id="tmStep1">
+      <p class="tm-sub">
+        Upload a file from <strong>any platform</strong> — AutoTrader, Gumtree, OLX,
+        Zillow, Property24, Rightmove and more. AI maps the columns automatically.
+      </p>
+
+      <div id="tmDrop" class="tm-drop" role="button" tabindex="0">
+        <div class="tm-drop-icon">📤</div>
+        <div class="tm-drop-big">Drop file here or <span class="tm-ul">browse</span></div>
+        <div class="tm-drop-sm">ZIP&nbsp;·&nbsp;CSV&nbsp;·&nbsp;Excel&nbsp;·&nbsp;TXT&nbsp;·&nbsp;JSON&nbsp;·&nbsp;Images</div>
+        <div class="tm-drop-xs">Max 100 MB</div>
+        <input type="file" id="tmFileInput" class="tm-file-input"
+               accept=".zip,.csv,.xlsx,.xls,.txt,.json,.jpg,.jpeg,.png,.webp">
+      </div>
+
+      <div id="tmProgress" style="display:none">
+        <div class="tm-bar-wrap"><div class="tm-bar-fill" id="tmBarFill"></div></div>
+        <div class="tm-bar-lbl" id="tmBarLbl">Uploading…</div>
+      </div>
+    </div><!-- /step1 -->
+
+    <!-- STEP 2: Preview & Confirm -->
+    <div id="tmStep2" style="display:none">
+      <div id="tmPlatform" class="tm-badge"></div>
+
+      <div class="tm-counts">
+        <div class="tm-count-box">
+          <span class="tm-count-n" id="tmCountAds">0</span>
+          <span class="tm-count-l">Listings found</span>
+        </div>
+        <div class="tm-count-box">
+          <span class="tm-count-n" id="tmCountPhotos">0</span>
+          <span class="tm-count-l">Photos found</span>
+        </div>
+      </div>
+
+      <details class="tm-details">
+        <summary>📋 Column mapping</summary>
+        <div class="tm-tbl-wrap">
+          <table class="tm-tbl">
+            <thead><tr><th>Your column</th><th></th><th>Tangle-me field</th></tr></thead>
+            <tbody id="tmMappingBody"></tbody>
+          </table>
+        </div>
+      </details>
+
+      <h3 class="tm-prev-title">Preview — first 3 listings</h3>
+      <div id="tmCards"></div>
+
+      <div id="tmWarnings" class="tm-warn" style="display:none">
+        <strong>⚠️ Warnings:</strong>
+        <ul id="tmWarnList"></ul>
+      </div>
+
+      <div class="tm-btns">
+        <button id="tmBack"    class="tm-btn-sec" type="button">← Back</button>
+        <button id="tmConfirm" class="tm-btn-pri" type="button">
+            ✅ Import <span id="tmConfirmN">0</span> listings
+        </button>
+      </div>
+    </div><!-- /step2 -->
+
+    <!-- STEP 3: Result -->
+    <div id="tmStep3" style="display:none">
+      <div id="tmResultIcon" class="tm-result-icon">✅</div>
+      <h3 id="tmResultTitle" style="text-align:center">Import complete!</h3>
+      <div id="tmResultStats" class="tm-result-stats"></div>
+      <div id="tmResultErrors" class="tm-result-errors" style="display:none"></div>
+      <button id="tmDone" class="tm-btn-pri" type="button" style="display:block;margin:0 auto">Done</button>
+    </div>
+
+  </div><!-- /tm-modal -->
+</div><!-- /tm-overlay -->
+
+<style>
+:root{--g:#10b981;--gd:#059669;--bd:#e5e7eb;--tx:#1f2937;--mu:#6b7280}
+.tm-bulk-btn{background:var(--g);color:#fff;border:none;border-radius:8px;padding:10px 20px;font-size:15px;font-weight:600;cursor:pointer}
+.tm-bulk-btn:hover{background:var(--gd)}
+.tm-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;z-index:9999;padding:16px}
+.tm-modal{background:#fff;border-radius:14px;box-shadow:0 20px 60px rgba(0,0,0,.2);width:100%;max-width:620px;max-height:90vh;overflow-y:auto;padding:28px}
+.tm-modal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.tm-modal-head h2{margin:0;font-size:20px}
+.tm-x{background:none;border:none;font-size:22px;cursor:pointer;color:var(--mu)}
+.tm-sub{color:var(--mu);font-size:14px;margin:0 0 18px}
+.tm-drop{border:2px dashed var(--bd);border-radius:12px;padding:38px 20px;text-align:center;cursor:pointer;position:relative;transition:border-color .2s,background .2s}
+.tm-drop:hover,.tm-drop.over{border-color:var(--g);background:#f0fdf4}
+.tm-drop-icon{font-size:38px;margin-bottom:10px}
+.tm-drop-big{font-size:16px;font-weight:600}
+.tm-ul{color:var(--g);text-decoration:underline}
+.tm-drop-sm{font-size:13px;color:var(--mu);margin-top:6px}
+.tm-drop-xs{font-size:12px;color:var(--mu);margin-top:3px}
+.tm-file-input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.tm-bar-wrap{background:var(--bd);border-radius:99px;height:8px;overflow:hidden;margin-top:18px}
+.tm-bar-fill{background:var(--g);height:100%;width:0;transition:width .3s;border-radius:99px}
+.tm-bar-lbl{font-size:13px;color:var(--mu);text-align:center;margin-top:6px}
+.tm-badge{background:#eff6ff;border:1px solid #bfdbfe;border-radius:20px;padding:5px 14px;font-size:13px;color:#1d4ed8;display:inline-block;margin-bottom:14px;font-weight:500}
+.tm-counts{display:flex;gap:12px;margin-bottom:18px}
+.tm-count-box{flex:1;background:#f9fafb;border:1px solid var(--bd);border-radius:8px;padding:14px;text-align:center}
+.tm-count-n{display:block;font-size:28px;font-weight:700;color:var(--g)}
+.tm-count-l{font-size:13px;color:var(--mu)}
+.tm-details{margin-bottom:18px}
+.tm-details summary{cursor:pointer;font-size:14px;color:var(--mu);padding:6px 0}
+.tm-tbl-wrap{max-height:160px;overflow-y:auto;margin-top:8px}
+.tm-tbl{width:100%;border-collapse:collapse;font-size:13px}
+.tm-tbl th{background:#f9fafb;padding:7px 10px;text-align:left;position:sticky;top:0;font-weight:600}
+.tm-tbl td{padding:6px 10px;border-top:1px solid var(--bd)}
+.tm-tbl .skip{color:var(--mu);font-style:italic}
+.tm-tbl .hit{color:var(--g);font-weight:500}
+.tm-prev-title{font-size:14px;font-weight:600;margin:0 0 10px}
+.tm-card{border:1px solid var(--bd);border-radius:8px;padding:12px 14px;font-size:13px;margin-bottom:8px}
+.tm-card-t{font-weight:600;margin-bottom:3px}
+.tm-card-m{color:var(--mu);display:flex;flex-wrap:wrap;gap:6px}
+.tm-card-m span:not(:first-child)::before{content:"· "}
+.tm-warn{background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:12px 14px;font-size:13px;margin-bottom:16px}
+.tm-warn ul{margin:8px 0 0;padding-left:18px}
+.tm-btns{display:flex;gap:10px;justify-content:flex-end}
+.tm-btn-pri{background:var(--g);color:#fff;border:none;border-radius:8px;padding:10px 20px;font-size:14px;font-weight:600;cursor:pointer}
+.tm-btn-pri:hover{background:var(--gd)}
+.tm-btn-pri:disabled{background:#9ca3af;cursor:not-allowed}
+.tm-btn-sec{background:#f3f4f6;color:var(--tx);border:1px solid var(--bd);border-radius:8px;padding:10px 20px;font-size:14px;cursor:pointer}
+.tm-result-icon{font-size:50px;text-align:center;margin:10px 0 6px}
+.tm-result-stats{display:flex;justify-content:center;gap:22px;margin-bottom:18px;flex-wrap:wrap}
+.tm-rs{text-align:center}
+.tm-rs-n{display:block;font-size:26px;font-weight:700;color:var(--g)}
+.tm-rs-l{font-size:13px;color:var(--mu)}
+.tm-result-errors{background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:12px 14px;font-size:13px;margin-bottom:14px;max-height:120px;overflow-y:auto}
+</style>
+
+<script>
+(function(){
+  var token=null, mapping=null, total=0;
+  var modal=$('tmModal'),step1=$('tmStep1'),step2=$('tmStep2'),step3=$('tmStep3');
+  var drop=$('tmDrop'),inp=$('tmFileInput'),prog=$('tmProgress'),fill=$('tmBarFill'),lbl=$('tmBarLbl');
+
+  function $(id){return document.getElementById(id)}
+
+  $('tmBulkBtn').onclick = function(){ modal.style.display='flex'; reset(); };
+  $('tmClose').onclick   = close;
+  modal.onclick          = function(e){ if(e.target===modal) close(); };
+
+  function close(){
+    if(token) fetch('bulk_upload.php',{method:'POST',body:new URLSearchParams({action:'cancel',temp_token:token})}).catch(()=>{});
+    modal.style.display='none'; reset();
+  }
+
+  function reset(){
+    step1.style.display='block'; step2.style.display='none'; step3.style.display='none';
+    prog.style.display='none'; fill.style.width='0%'; inp.value='';
+    token=null; mapping=null; total=0;
+    $('tmWarnings').style.display='none';
+    var e=$('tmResultErrors'); if(e) e.style.display='none';
+  }
+
+  // Drag & drop
+  drop.addEventListener('dragover',  function(e){e.preventDefault();drop.classList.add('over')});
+  drop.addEventListener('dragleave', function(){drop.classList.remove('over')});
+  drop.addEventListener('drop',      function(e){e.preventDefault();drop.classList.remove('over');if(e.dataTransfer.files[0])go(e.dataTransfer.files[0])});
+  drop.onkeypress = function(e){if(e.key==='Enter'||e.key===' ')inp.click()};
+  inp.onchange    = function(){if(inp.files[0])go(inp.files[0])};
+
+  function go(file){
+    if(file.size>100*1024*1024){alert('File too large (max 100MB).');return;}
+    prog.style.display='block'; setP(5,'Uploading…');
+    var fd=new FormData(); fd.append('bulk_file',file); fd.append('action','preview');
+    var xhr=new XMLHttpRequest();
+    xhr.open('POST','bulk_upload.php',true);
+    xhr.upload.onprogress=function(e){if(e.lengthComputable)setP(Math.round(e.loaded/e.total*60)+5,'Uploading…')};
+    xhr.onreadystatechange=function(){
+      if(xhr.readyState!==4)return;
+      setP(90,'Analysing with AI…');
+      var d;
+      try{d=JSON.parse(xhr.responseText)}catch(ex){err('Invalid server response.');return}
+      if(!d.success){err(d.error||'Upload failed.');return}
+      setP(100,'Done!');
+      setTimeout(function(){showPreview(d)},350);
+    };
+    xhr.onerror=function(){err('Network error — check connection.')};
+    xhr.send(fd);
+  }
+
+  function showPreview(d){
+    token=d.temp_token; mapping=d.mapping; total=d.total_rows||0;
+    $('tmPlatform').textContent='🔍 Detected: '+(d.source_platform||'Unknown platform');
+    $('tmCountAds').textContent=total;
+    $('tmCountPhotos').textContent=d.total_images||0;
+    $('tmConfirmN').textContent=total;
+
+    // Mapping table
+    var tb=$('tmMappingBody'); tb.innerHTML='';
+    if(mapping){
+      Object.entries(mapping).forEach(function(e){
+        var tr=document.createElement('tr');
+        tr.innerHTML='<td>'+x(e[0])+'</td><td>→</td><td class="'+(e[1]&&e[1]!=='skip'?'hit':'skip')+'">'+(e[1]&&e[1]!=='skip'?x(e[1]):'— skip —')+'</td>';
+        tb.appendChild(tr);
+      });
+    }
+
+    // Preview cards
+    var c=$('tmCards'); c.innerHTML='';
+    if(d.preview_rows&&d.preview_rows.length){
+      d.preview_rows.forEach(function(r){
+        var t=r.title||[r.year,r.make,r.model].filter(Boolean).join(' ')||'Untitled';
+        var p=r.price?((r.currency||'')+' '+Number(r.price).toLocaleString()):'';
+        var l=[r.city,r.country].filter(Boolean).join(', ');
+        var div=document.createElement('div');
+        div.className='tm-card';
+        div.innerHTML='<div class="tm-card-t">'+x(t)+'</div><div class="tm-card-m">'
+          +(p?'<span>'+x(p)+'</span>':'')+( l?'<span>'+x(l)+'</span>':'')+(r.category?'<span>'+x(r.category)+'</span>':'')
+          +'</div>';
+        c.appendChild(div);
+      });
+    }
+
+    // Warnings
+    if(d.warnings&&d.warnings.length){
+      var wl=$('tmWarnList'); wl.innerHTML=d.warnings.map(function(w){return'<li>'+x(w)+'</li>'}).join('');
+      $('tmWarnings').style.display='block';
+    }
+
+    step1.style.display='none'; prog.style.display='none'; step2.style.display='block';
+  }
+
+  $('tmBack').onclick=function(){
+    if(token)fetch('bulk_upload.php',{method:'POST',body:new URLSearchParams({action:'cancel',temp_token:token})}).catch(()=>{});
+    reset();
+  };
+
+  $('tmConfirm').onclick=function(){
+    if(!token){err('Session expired — please re-upload.');return}
+    var btn=$('tmConfirm'); btn.disabled=true; btn.textContent='⏳ Importing…';
+    fetch('bulk_upload.php',{method:'POST',body:new URLSearchParams({action:'confirm',temp_token:token,mapping:JSON.stringify(mapping)})})
+      .then(function(r){return r.json()})
+      .then(function(d){
+        btn.disabled=false; btn.textContent='✅ Import '+total+' listings';
+        if(!d.success){err(d.error||'Import failed.');return}
+        showResult(d);
+      })
+      .catch(function(){btn.disabled=false;err('Network error during import.')});
+  };
+
+  function showResult(d){
+    $('tmResultIcon').textContent=d.ads_created>0?'✅':'⚠️';
+    $('tmResultTitle').textContent=d.ads_created>0?'Import complete!':'Import finished with issues';
+    $('tmResultStats').innerHTML=
+      stat(d.ads_created,'Ads created')+stat(d.photos_saved,'Photos saved')+stat(d.ads_skipped,'Skipped');
+    if(d.errors&&d.errors.length){
+      var eb=$('tmResultErrors'); eb.style.display='block';
+      eb.innerHTML='<strong>⚠️ Row errors:</strong><br>'+d.errors.map(x).join('<br>');
+    }
+    step2.style.display='none'; step3.style.display='block';
+  }
+
+  function stat(n,l){return'<div class="tm-rs"><span class="tm-rs-n">'+n+'</span><span class="tm-rs-l">'+l+'</span></div>'}
+
+  $('tmDone').onclick=close;
+
+  function setP(p,t){fill.style.width=p+'%';lbl.textContent=t}
+  function err(m){prog.style.display='none';alert('❌ '+m);reset()}
+  function x(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+})();
+</script>

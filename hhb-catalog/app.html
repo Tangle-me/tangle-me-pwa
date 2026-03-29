@@ -1,0 +1,1014 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#1a1a2e">
+<title>HH&amp;B Order</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#f5f5f0;--surface:#fff;--text:#1a1a2e;--text2:#555;--text3:#888;--accent:#e85d04;--accent2:#dc2f02;--accent-light:#fff3eb;--border:#e8e8e3;--green:#2d6a4f;--green-light:#d8f3dc;--radius:14px;--shadow:0 2px 12px rgba(0,0,0,.06);--header:#1a1a2e;--header2:#16213e}
+html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;background:var(--bg);color:var(--text);-webkit-tap-highlight-color:transparent;overflow:hidden}
+#app{height:100%;display:flex;flex-direction:column}
+.hdr{background:linear-gradient(135deg,var(--header),var(--header2));color:#fff;padding:14px 16px;position:relative;z-index:100;flex-shrink:0}
+.hdr-top{display:flex;align-items:center;gap:10px}
+.hdr-back{width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.12);border:none;color:#fff;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.hdr-back:active{background:rgba(255,255,255,.25)}
+.hdr-title{font-size:18px;font-weight:700;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;-webkit-user-select:none;user-select:none}
+.hdr-sub{font-size:12px;opacity:.7;margin-top:2px}
+.admin-badge{font-size:10px;background:#e63946;border-radius:20px;padding:3px 10px;font-weight:700;cursor:pointer;letter-spacing:.5px;flex-shrink:0}
+.admin-orders-btn{font-size:11px;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:20px;padding:4px 12px;font-weight:600;cursor:pointer;color:#fff;flex-shrink:0}
+.search-wrap{padding:12px 16px 8px;flex-shrink:0;background:var(--bg)}
+.search-box{display:flex;align-items:center;background:var(--surface);border:2px solid var(--border);border-radius:12px;padding:0 14px}
+.search-box:focus-within{border-color:var(--accent)}
+.search-box svg{width:18px;height:18px;color:var(--text3);flex-shrink:0}
+.search-box input{flex:1;border:none;outline:none;padding:12px 10px;font-size:15px;font-family:inherit;background:none}
+.search-box input::placeholder{color:var(--text3)}
+.search-clear{width:28px;height:28px;border-radius:50%;background:var(--border);border:none;color:var(--text2);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.content{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:90px}
+.sec-list{padding:8px 16px 16px}
+.sec-card{display:flex;align-items:center;gap:14px;background:var(--surface);border-radius:var(--radius);padding:16px;margin-bottom:10px;box-shadow:var(--shadow);cursor:pointer;border:1px solid var(--border)}
+.sec-card:active{transform:scale(.98)}
+.sec-icon{width:48px;height:48px;border-radius:12px;background:var(--accent-light);display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0}
+.sec-info{flex:1;min-width:0}
+.sec-name{font-size:15px;font-weight:600;line-height:1.3}
+.sec-meta{font-size:12px;color:var(--text3);margin-top:3px}
+.brand-grid{padding:8px 16px 16px;display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.brand-card{background:var(--surface);border-radius:var(--radius);padding:16px 14px;box-shadow:var(--shadow);cursor:pointer;border:1px solid var(--border);text-align:center}
+.brand-card:active{transform:scale(.97)}
+.brand-emoji{font-size:28px;margin-bottom:8px}
+.brand-name{font-size:13px;font-weight:600;line-height:1.3;word-break:break-word}
+.brand-count{font-size:11px;color:var(--text3);margin-top:4px}
+.prod-list{padding:8px 16px 16px}
+.prod-card{display:flex;align-items:center;gap:12px;background:var(--surface);border-radius:var(--radius);padding:14px;margin-bottom:8px;box-shadow:var(--shadow);border:1px solid var(--border);transition:background .15s,border-color .15s}
+.prod-card.in-cart{background:#e8f5e9;border-left:3px solid #4caf50}
+.prod-info{flex:1;min-width:0}
+.prod-desc{font-size:13px;font-weight:500;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.prod-row{display:flex;align-items:center;gap:8px;margin-top:5px;flex-wrap:wrap}
+.prod-code{font-size:11px;background:#eee;color:var(--text2);padding:2px 8px;border-radius:6px;font-weight:600;font-family:monospace;cursor:pointer;position:relative;display:inline-flex;align-items:center;gap:4px;padding-right:22px}
+.prod-code::after{content:'\1F4D6';font-size:10px;position:absolute;right:2px;top:50%;transform:translateY(-50%);opacity:.45;transition:opacity .2s}
+.prod-code:active::after{opacity:1}
+.prod-size{font-size:11px;color:var(--text3)}
+.prod-price{font-size:14px;font-weight:700;color:var(--green);white-space:nowrap;margin-top:3px}
+.prod-add{width:40px;height:40px;border-radius:50%;background:var(--accent);border:none;color:#fff;font-size:22px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.prod-add:active{transform:scale(.9);background:var(--accent2)}
+.prod-qty-wrap{display:flex;align-items:center;gap:0;flex-shrink:0}
+.prod-qty-wrap button{width:32px;height:32px;border-radius:8px;border:none;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-weight:700}
+.prod-qty-wrap button:active{transform:scale(.9)}
+.prod-qty-minus{background:var(--border);color:var(--text)}
+.prod-qty-plus{background:var(--accent);color:#fff}
+.prod-qty-val{width:28px;text-align:center;font-size:14px;font-weight:700}
+/* Cart FAB */
+.cart-fab{position:fixed;bottom:24px;right:20px;width:60px;height:60px;border-radius:50%;background:var(--accent);border:none;color:#fff;font-size:26px;cursor:pointer;box-shadow:0 4px 20px rgba(232,93,4,.4);z-index:200;display:flex;align-items:center;justify-content:center}
+.cart-fab:active{transform:scale(.9)}
+.cart-fab-badge{position:absolute;top:-2px;right:-2px;background:var(--accent2);color:#fff;font-size:11px;font-weight:700;min-width:22px;height:22px;border-radius:11px;display:flex;align-items:center;justify-content:center;padding:0 6px;border:2px solid var(--bg)}
+.cart-fab.empty{opacity:.4;pointer-events:none}
+/* Admin lock button */
+.admin-lock{position:fixed;bottom:28px;left:16px;width:44px;height:44px;border-radius:50%;background:#e8e8e3;border:2px solid #ccc;color:#666;font-size:18px;cursor:pointer;z-index:200;display:flex;align-items:center;justify-content:center;opacity:1;transition:all .2s;box-shadow:0 2px 8px rgba(0,0,0,.1)}
+.admin-lock:active{background:#ddd;transform:scale(.9)}
+.admin-lock.active{background:#e63946;color:#fff;border-color:#e63946;box-shadow:0 2px 12px rgba(230,57,70,.4)}
+/* Cart drawer */
+.cart-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:300;opacity:0;pointer-events:none;transition:opacity .3s}
+.cart-overlay.open{opacity:1;pointer-events:auto}
+.cart-drawer{position:fixed;bottom:0;left:0;right:0;max-height:85vh;background:var(--surface);border-radius:20px 20px 0 0;z-index:301;transform:translateY(100%);transition:transform .3s cubic-bezier(.32,.72,0,1);display:flex;flex-direction:column}
+.cart-drawer.open{transform:translateY(0)}
+.cart-handle{width:40px;height:4px;background:var(--border);border-radius:2px;margin:10px auto}
+.cart-header{display:flex;align-items:center;justify-content:space-between;padding:4px 20px 14px;border-bottom:1px solid var(--border)}
+.cart-title{font-size:18px;font-weight:700}
+.cart-clear{font-size:13px;color:var(--accent2);background:none;border:none;cursor:pointer;font-weight:600;font-family:inherit}
+.cart-items{flex:1;overflow-y:auto;padding:12px 20px}
+.cart-item{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border)}
+.cart-item:last-child{border-bottom:none}
+.cart-item-info{flex:1;min-width:0}
+.cart-item-desc{font-size:13px;font-weight:500;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.cart-item-code{font-size:11px;color:var(--text3);font-family:monospace;margin-top:2px}
+.cart-item-price{font-size:13px;font-weight:600;color:var(--green);margin-top:2px}
+.cart-qty{display:flex;align-items:center;gap:0;flex-shrink:0}
+.cart-qty button{width:32px;height:32px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-weight:600}
+.cart-qty button:active{background:var(--border)}
+.cart-qty span{width:32px;text-align:center;font-size:14px;font-weight:700}
+.cart-footer{padding:16px 20px;border-top:1px solid var(--border);background:var(--surface)}
+.cart-total{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.cart-total-label{font-size:14px;color:var(--text2)}
+.cart-total-amount{font-size:20px;font-weight:700;color:var(--green)}
+.cart-submit{width:100%;padding:16px;border-radius:14px;border:none;background:var(--green);color:#fff;font-size:16px;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px}
+.cart-submit:active{transform:scale(.98);background:#1b4332}
+.cart-empty{text-align:center;padding:40px 20px;color:var(--text3)}
+.cart-empty-icon{font-size:48px;margin-bottom:12px}
+.cart-empty-text{font-size:14px}
+.cust-input-wrap{padding:0 20px 14px}
+.cust-input-label{font-size:12px;color:var(--text2);margin-bottom:6px;font-weight:500}
+.cust-input{width:100%;padding:12px 14px;border:2px solid var(--border);border-radius:10px;font-size:15px;font-family:inherit;outline:none}
+.cust-input:focus{border-color:var(--green)}
+.search-section-label{font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;padding:12px 0 6px}
+.empty-state{text-align:center;padding:60px 20px;color:var(--text3)}
+.empty-state-icon{font-size:48px;margin-bottom:12px}
+@keyframes slideUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.animate-in{animation:slideUp .3s ease both}
+.toast{position:fixed;bottom:100px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--text);color:#fff;padding:10px 20px;border-radius:10px;font-size:13px;font-weight:600;opacity:0;transition:all .3s;z-index:400;pointer-events:none;white-space:nowrap}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+/* PIN overlay */
+.pin-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:500;display:flex;align-items:center;justify-content:center}
+.pin-box{background:var(--surface);border-radius:20px;padding:30px;width:280px;text-align:center}
+.pin-box h3{margin-bottom:16px;font-size:16px}
+.pin-box input{width:100%;padding:14px;border:2px solid var(--border);border-radius:12px;font-size:20px;text-align:center;letter-spacing:8px;font-family:inherit;outline:none}
+.pin-box input:focus{border-color:var(--accent)}
+.pin-box .pin-btns{display:flex;gap:10px;margin-top:16px}
+.pin-box .pin-btns button{flex:1;padding:12px;border-radius:10px;border:none;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit}
+.pin-cancel{background:var(--border);color:var(--text)}
+.pin-confirm{background:var(--accent);color:#fff}
+/* Orders */
+.ord-card{background:var(--surface);border-radius:var(--radius);padding:16px;margin-bottom:10px;box-shadow:var(--shadow);border:1px solid var(--border)}
+.ord-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
+.ord-name{font-size:15px;font-weight:700}
+.ord-date{font-size:11px;color:var(--text3);margin-bottom:8px}
+.ord-status{font-size:10px;padding:3px 10px;border-radius:10px;font-weight:700;text-transform:uppercase}
+.ord-status.pending{background:#fff3cd;color:#856404}
+.ord-status.confirmed{background:var(--green-light);color:var(--green)}
+.ord-status.rejected{background:#f8d7da;color:#721c24}
+.ord-items table{width:100%;border-collapse:collapse;margin-top:4px}
+.ord-items td{padding:4px 6px;border-bottom:1px solid var(--border);font-size:12px}
+.ord-btns{display:flex;gap:8px;margin-top:12px}
+.ord-btns button{flex:1;padding:10px;border-radius:10px;border:none;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit}
+.ord-confirm-btn{background:var(--green);color:#fff}
+.ord-reject-btn{background:#e63946;color:#fff}
+.gen-excel-btn{width:calc(100% - 32px);margin:0 16px 16px;padding:16px;border-radius:14px;border:none;background:var(--header);color:#fff;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px}
+.gen-excel-btn:active{opacity:.8}
+/* Photo modal */
+.photo-modal-overlay{display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.92);align-items:center;justify-content:center;flex-direction:column;padding:16px;-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px)}
+.photo-modal-overlay.active{display:flex}
+.photo-modal-close{position:absolute;top:12px;right:16px;background:rgba(255,255,255,.1);border:none;color:#fff;font-size:28px;cursor:pointer;z-index:10000;width:44px;height:44px;display:flex;align-items:center;justify-content:center;border-radius:50%}
+.photo-modal-close:active{background:rgba(255,255,255,.25)}
+.photo-modal-code{color:#fff;font-size:13px;font-weight:700;letter-spacing:.05em;margin-bottom:8px;opacity:.7}
+.photo-modal-desc{color:#fff;font-size:12px;margin-bottom:12px;opacity:.5;text-align:center;max-width:90vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.photo-modal-img{max-width:92vw;max-height:60vh;border-radius:10px;object-fit:contain;box-shadow:0 4px 40px rgba(0,0,0,.5)}
+.photo-modal-loading{color:rgba(255,255,255,.5);font-size:14px}
+.photo-modal-error{color:rgba(255,255,255,.5);font-size:14px;text-align:center;padding:40px 20px}
+.photo-modal-error span{display:block;font-size:36px;margin-bottom:12px}
+.photo-carousel{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;padding:8px 0}
+.photo-carousel img{scroll-snap-align:center;max-width:92vw;max-height:60vh;border-radius:10px;object-fit:contain;box-shadow:0 4px 40px rgba(0,0,0,.5);flex-shrink:0}
+.photo-dots{display:flex;gap:6px;justify-content:center;margin-top:10px}
+.photo-dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.3)}
+.photo-dot.active{background:#fff}
+/* Hidden product indicator */
+.prod-card.hidden-prod{opacity:.55;border-left:3px solid #e63946}
+.prod-card.hidden-prod .prod-desc::before{content:'HIDDEN';font-size:9px;background:#e63946;color:#fff;padding:1px 6px;border-radius:4px;margin-right:6px;vertical-align:middle;font-weight:700;letter-spacing:.5px}
+/* prod-code: camera icon replaced with guide icon */
+/* Admin product mgmt */
+.admin-tab-bar{display:flex;gap:0;padding:0 16px;border-bottom:2px solid var(--border);background:var(--surface)}
+.admin-tab{flex:1;padding:12px 8px;text-align:center;font-size:12px;font-weight:600;cursor:pointer;border-bottom:3px solid transparent;color:var(--text3);transition:all .2s}
+.admin-tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+.admin-panel{padding:16px}
+.admin-card{background:var(--surface);border-radius:var(--radius);padding:16px;margin-bottom:10px;box-shadow:var(--shadow);border:1px solid var(--border)}
+.admin-card h4{font-size:14px;margin-bottom:8px}
+.admin-card p{font-size:12px;color:var(--text2);line-height:1.5}
+.admin-btn{display:inline-flex;align-items:center;gap:6px;padding:10px 18px;border-radius:10px;border:none;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit}
+.admin-btn:active{transform:scale(.97)}
+.admin-btn-primary{background:var(--accent);color:#fff}
+.admin-btn-green{background:var(--green);color:#fff}
+.admin-btn-red{background:#e63946;color:#fff}
+.admin-btn-outline{background:none;border:2px solid var(--border);color:var(--text)}
+.toggle-btn{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:8px;border:none;font-size:11px;font-weight:600;cursor:pointer}
+.toggle-show{background:var(--green-light);color:var(--green)}
+.toggle-hide{background:#fde8ea;color:#e63946}
+.recon-result{margin-top:12px;padding:12px;background:#f8f9fa;border-radius:10px;font-size:12px;line-height:1.8}
+.recon-stat{font-weight:700;font-size:14px}
+.recon-add{color:var(--green)}
+.recon-remove{color:#e63946}
+.recon-match{color:var(--text2)}
+.hidden-count-badge{font-size:10px;background:#e63946;color:#fff;padding:1px 7px;border-radius:10px;margin-left:6px}
+.file-drop{border:2px dashed var(--border);border-radius:var(--radius);padding:30px;text-align:center;cursor:pointer;transition:all .2s;margin-bottom:12px}
+.file-drop:hover{border-color:var(--accent);background:var(--accent-light)}
+.file-drop input{display:none}
+.file-drop-icon{font-size:32px;margin-bottom:8px}
+.file-drop-text{font-size:13px;color:var(--text2)}
+/* New product form */
+.npf-row{margin-bottom:10px}
+.npf-row label{display:block;font-size:11px;font-weight:600;color:var(--text2);margin-bottom:4px}
+.npf-row input,.npf-row select{width:100%;padding:10px 12px;border:2px solid var(--border);border-radius:10px;font-size:14px;font-family:inherit;outline:none}
+.npf-row input:focus,.npf-row select:focus{border-color:var(--accent)}
+/* Section guide button */
+.guide-btn{display:flex;align-items:center;justify-content:center;gap:8px;margin:4px 16px 12px;padding:12px 16px;border-radius:12px;border:2px solid var(--accent);background:var(--accent-light);color:var(--accent);font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .15s}
+.guide-btn:active{background:var(--accent);color:#fff;transform:scale(.98)}
+.guide-btn svg{width:18px;height:18px}
+/* Order Review full-screen */
+.review-page{padding:0 0 100px}
+.review-header{padding:20px 16px 12px;border-bottom:1px solid var(--border);background:var(--surface)}
+.review-title{font-size:18px;font-weight:700;margin-bottom:2px}
+.review-sub{font-size:12px;color:var(--text3)}
+.review-section-label{font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;padding:14px 16px 6px}
+.review-item{display:flex;align-items:center;gap:12px;padding:12px 16px;background:var(--surface);border-bottom:1px solid var(--border)}
+.review-item-info{flex:1;min-width:0}
+.review-item-desc{font-size:13px;font-weight:500;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.review-item-meta{font-size:11px;color:var(--text3);margin-top:2px;font-family:monospace}
+.review-qty{display:flex;align-items:center;gap:0;flex-shrink:0}
+.review-qty button{width:34px;height:34px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-weight:700}
+.review-qty button:active{background:var(--border)}
+.review-qty span{width:32px;text-align:center;font-size:15px;font-weight:700}
+.review-remove{width:34px;height:34px;border-radius:8px;border:none;background:#fde8ea;color:#e63946;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.review-remove:active{background:#e63946;color:#fff}
+.review-footer{position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--border);padding:12px 16px;z-index:100}
+.review-total{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.review-total-label{font-size:14px;color:var(--text2)}
+.review-total-amount{font-size:18px;font-weight:700;color:var(--green)}
+.review-btns{display:flex;gap:10px}
+.review-btn-back{flex:1;padding:14px;border-radius:12px;border:2px solid var(--border);background:var(--surface);color:var(--text);font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;text-align:center}
+.review-btn-back:active{background:var(--border)}
+.review-btn-send{flex:2;padding:14px;border-radius:12px;border:none;background:var(--green);color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px}
+.review-btn-send:active{background:#1b4332;transform:scale(.98)}
+.review-empty{text-align:center;padding:60px 20px;color:var(--text3)}
+.review-empty-icon{font-size:48px;margin-bottom:12px}
+.review-cust-wrap{padding:12px 16px;background:var(--surface);border-bottom:1px solid var(--border)}
+.review-cust-label{font-size:12px;font-weight:600;color:var(--text2);margin-bottom:6px}
+.review-cust-input{width:100%;padding:12px 14px;border:2px solid var(--border);border-radius:10px;font-size:15px;font-family:inherit;outline:none}
+.review-cust-input:focus{border-color:var(--green)}
+@media(min-width:500px){.brand-grid{grid-template-columns:1fr 1fr 1fr}}
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<!-- Photo Modal -->
+<div class="photo-modal-overlay" id="photoModal">
+  <button class="photo-modal-close" id="photoClose">✕</button>
+  <div class="photo-modal-code" id="photoCode"></div>
+  <div class="photo-modal-desc" id="photoDesc"></div>
+  <div id="photoContent"></div>
+</div>
+
+<!-- SheetJS for Excel reconciliation (admin) -->
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+<!-- Load catalog data externally -->
+<script src="catalog-data.js?v=20260328"></script>
+
+<script>
+/* ═══════════════════════════════════════════════════════════
+   HHB PRODUCT CATALOG v3 — March 2026
+   Fixes: surgical DOM updates, admin button, photo carousel
+   ═══════════════════════════════════════════════════════════ */
+
+const ADMIN_PIN='1320';
+const ADMIN_WA='27833058054';
+const API_BASE=location.origin+'/hhb-catalog/';
+
+/* ─── STATE ─── */
+let cart={},cartOpen=false,toastMsg='',toastTimer=null;
+let curView='sections',curSection=null,curBrand=null;
+let adminMode=false,showPin=false;
+let custName=localStorage.getItem('hhb_cust')||'';
+let orders=[],ordersLoaded=false;
+let searchQuery='',searchTimer=null;
+let adminTab='orders'; /* orders|hidden|reconcile|addnew */
+let reconResult=null;
+
+/* ─── PRODUCT INDEX ─── */
+let _ap=null,_apAdmin=null;
+function ap(){
+  if(!_apAdmin){
+    _apAdmin=[];
+    for(const sec of ORDER){
+      const bs=SECTIONS[sec];
+      if(!bs)continue;
+      for(const[bn,ps]of Object.entries(bs))
+        for(const p of ps)_apAdmin.push({...p,section:sec,brand:bn});
+    }
+  }
+  if(adminMode)return _apAdmin;
+  if(!_ap)_ap=_apAdmin.filter(p=>!p.h);
+  return _ap;
+}
+function resetIndex(){_ap=null;_apAdmin=null;}
+/* Count visible products in a section/brand */
+function countProds(ps){return adminMode?ps.length:ps.filter(p=>!p.h).length;}
+function hiddenCount(ps){return ps.filter(p=>p.h).length;}
+function visibleProds(ps){return adminMode?ps:ps.filter(p=>!p.h);}
+
+/* ─── HELPERS ─── */
+function cc(){return Object.values(cart).reduce((s,i)=>s+i.qty,0);}
+function ct(){return Object.values(cart).reduce((s,i)=>s+(i.price*i.qty),0);}
+function fmt(n){return'R'+n.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g,',');}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function sv(){try{localStorage.setItem('hhb_cart',JSON.stringify(cart))}catch(e){}}
+function ld(){try{const c=localStorage.getItem('hhb_cart');if(c)cart=JSON.parse(c)}catch(e){}}
+
+/* ─── TOAST ─── */
+function toast(m){
+  toastMsg=m;
+  const t=document.querySelector('.toast');
+  if(t){t.textContent=m;t.classList.add('show');}
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>{
+    toastMsg='';
+    const t2=document.querySelector('.toast');
+    if(t2)t2.classList.remove('show');
+  },1800);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   FIX #1: SURGICAL DOM UPDATES — no full re-render on qty
+   ═══════════════════════════════════════════════════════════ */
+function addToCart(code,desc,price,size,sec,brand){
+  if(cart[code]){
+    cart[code].qty++;
+  } else {
+    cart[code]={desc,price:price||0,qty:1,size,sec,brand,code};
+  }
+  toast((desc||'').substring(0,30)+'... added');
+  sv();
+  updateProductCard(code);
+  updateCartBadge();
+}
+
+function setQty(code,d){
+  if(!cart[code])return;
+  cart[code].qty+=d;
+  if(cart[code].qty<=0){
+    delete cart[code];
+  }
+  sv();
+  updateProductCard(code);
+  updateCartBadge();
+}
+
+/* Update ONLY the specific product card — no scroll reset */
+function updateProductCard(code){
+  const card=document.querySelector('[data-pcode="'+code+'"]');
+  if(!card)return;
+  const ic=cart[code];
+  if(ic){
+    card.classList.add('in-cart');
+    // Replace the action area (last child: add button or qty wrap)
+    let actionEl=card.querySelector('.prod-qty-wrap')||card.querySelector('.prod-add');
+    if(actionEl){
+      const wrap=document.createElement('div');
+      wrap.className='prod-qty-wrap';
+      wrap.innerHTML='<button class="prod-qty-minus" data-action="qty-minus" data-code="'+esc(code)+'">\u2212</button><span class="prod-qty-val">'+ic.qty+'</span><button class="prod-qty-plus" data-action="qty-plus" data-code="'+esc(code)+'">+</button>';
+      actionEl.replaceWith(wrap);
+    }
+  } else {
+    card.classList.remove('in-cart');
+    let actionEl=card.querySelector('.prod-qty-wrap');
+    if(actionEl){
+      // Get product data from card dataset
+      const btn=document.createElement('button');
+      btn.className='prod-add';
+      btn.setAttribute('data-action','add');
+      btn.setAttribute('data-code',card.dataset.pcode);
+      btn.setAttribute('data-desc',card.dataset.pdesc||'');
+      btn.setAttribute('data-price',card.dataset.pprice||'0');
+      btn.setAttribute('data-size',card.dataset.psize||'');
+      btn.setAttribute('data-sec',card.dataset.psec||'');
+      btn.setAttribute('data-brand',card.dataset.pbrand||'');
+      btn.textContent='+';
+      actionEl.replaceWith(btn);
+    }
+  }
+}
+
+function updateCartBadge(){
+  const fab=document.querySelector('.cart-fab');
+  if(!fab)return;
+  const cnt=cc();
+  if(cnt){
+    fab.classList.remove('empty');
+    let badge=fab.querySelector('.cart-fab-badge');
+    if(!badge){badge=document.createElement('span');badge.className='cart-fab-badge';fab.appendChild(badge);}
+    badge.textContent=cnt;
+  } else {
+    fab.classList.add('empty');
+    const badge=fab.querySelector('.cart-fab-badge');
+    if(badge)badge.remove();
+  }
+}
+
+/* ─── NAVIGATION ─── */
+function nav(v,s,b){curView=v;curSection=s||null;curBrand=b||null;searchQuery='';render();document.querySelector('.content')?.scrollTo(0,0);}
+let prevView=null,prevSection=null,prevBrand=null;
+function goBack(){if(curView==='review'){curView=prevView||'sections';curSection=prevSection;curBrand=prevBrand;cartOpen=false;render();}else if(curView==='products')nav('brands',curSection);else if(curView==='admin-orders')nav('sections');else nav('sections');}
+
+/* ─── SEARCH ─── */
+function searchProds(q){
+  const ts=q.toLowerCase().trim().split(/\s+/);
+  return ap().filter(p=>{
+    if(!adminMode&&p.h)return false;
+    const t=(p.d+' '+p.c+' '+p.brand+' '+p.section+' '+(p.s||'')).toLowerCase();
+    return ts.every(w=>t.includes(w));
+  }).slice(0,80);
+}
+
+/* ─── ADMIN ─── */
+function checkPin(pin){
+  if(pin===ADMIN_PIN){adminMode=true;showPin=false;resetIndex();toast('Admin mode ON');render();}
+  else{toast('Wrong PIN');showPin=false;render();}
+}
+
+/* ─── ORDERS ─── */
+function sendOrder(){
+  const items=Object.values(cart);if(!items.length)return;
+  if(!custName.trim()){toast('Enter your name first');return;}
+  localStorage.setItem('hhb_cust',custName);
+  const d=new Date();const ds=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')+' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');
+  let msg='\u{1F4CB} *ORDER*\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\n';
+  msg+='Customer: '+custName.trim()+'\nDate: '+ds+'\n\n';
+  items.forEach((it,i)=>{msg+=(i+1)+'. '+it.code+' \u00D7 '+it.qty+'\n';});
+  msg+='\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\n*Items: '+items.length+' | Units: '+cc()+'*';
+  const payload={customer:custName.trim(),items:items.map(it=>({code:it.code,desc:it.desc,qty:it.qty,size:it.size||''})),date:ds};
+  try{fetch(API_BASE+'save-order.php',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)}).catch(()=>{});}catch(e){}
+  window.open('https://wa.me/'+ADMIN_WA+'?text='+encodeURIComponent(msg),'_blank');
+  cart={};sv();cartOpen=false;curView='sections';curSection=null;curBrand=null;render();toast('Order sent!');
+}
+function loadOrders(){fetch(API_BASE+'get-orders.php?pin='+ADMIN_PIN).then(r=>r.json()).then(data=>{orders=data;ordersLoaded=true;render();}).catch(()=>{toast('Could not load orders');});}
+function confirmOrder(id){fetch(API_BASE+'update-order.php',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id,status:'confirmed',pin:ADMIN_PIN})}).then(()=>{loadOrders();toast('Confirmed');}).catch(()=>{});}
+function rejectOrder(id){fetch(API_BASE+'update-order.php',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id,status:'rejected',pin:ADMIN_PIN})}).then(()=>{loadOrders();toast('Rejected');}).catch(()=>{});}
+function generateExcel(){
+  const confirmed=orders.filter(o=>o.status==='confirmed');
+  if(!confirmed.length){toast('No confirmed orders');return;}
+  const agg={};
+  confirmed.forEach(o=>{let items=o.items;if(typeof items==='string')items=JSON.parse(items);items.forEach(it=>{if(!agg[it.code])agg[it.code]={desc:it.desc||'',qty:0};agg[it.code].qty+=it.qty;});});
+  let h='<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel"><head><meta charset="utf-8"><!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet><x:Name>ORDER SHEET</x:Name><x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions></x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]--></head><body><table border="1">';
+  h+='<tr><th>CUSTOMER NUMBER</th><th>ITEM CODE</th><th>QUANTITY</th><th>DESCRIPTION</th></tr>';
+  for(const[code,info]of Object.entries(agg)){h+='<tr><td>GOL004</td><td>'+esc(code)+'</td><td>'+info.qty+'</td><td>'+esc(info.desc)+'</td></tr>';}
+  h+='</table></body></html>';
+  const blob=new Blob([h],{type:'application/vnd.ms-excel'});const url=URL.createObjectURL(blob);const a=document.createElement('a');
+  const now=new Date();a.href=url;a.download='HHB_Order_'+now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0')+'.xls';
+  a.click();URL.revokeObjectURL(url);toast('Excel downloaded');
+}
+
+/* ═══════════════════════════════════════════════════════════
+   RENDER — builds full page (only called on navigation changes)
+   ═══════════════════════════════════════════════════════════ */
+function prodCard(p,sec,brand,i){
+  const ic=cart[p.c];
+  const isHidden=p.h?true:false;
+  let cls='prod-card'+(ic?' in-cart':'')+(isHidden?' hidden-prod':'')+' animate-in';
+  let h='<div class="'+cls+'" style="animation-delay:'+(Math.min(i,15)*25)+'ms" data-pcode="'+esc(p.c)+'" data-pdesc="'+esc(p.d)+'" data-pprice="'+(p.p||0)+'" data-psize="'+esc(p.s||'')+'" data-psec="'+esc(sec)+'" data-pbrand="'+esc(brand)+'">';
+  h+='<div class="prod-info"><div class="prod-desc">'+esc(p.d)+'</div><div class="prod-row"><span class="prod-code">'+esc(p.c)+'</span>';
+  if(p.s)h+='<span class="prod-size">'+esc(p.s)+'</span>';
+  h+='</div>';
+  if(adminMode&&p.p)h+='<div class="prod-price">'+fmt(p.p)+'</div>';
+  h+='</div>';
+  if(isHidden&&adminMode){
+    h+='<button class="toggle-btn toggle-show" data-action="unhide-prod" data-code="'+esc(p.c)+'" title="Show to customers">Show</button>';
+  } else if(ic){
+    h+='<div class="prod-qty-wrap"><button class="prod-qty-minus" data-action="qty-minus" data-code="'+esc(p.c)+'">\u2212</button><span class="prod-qty-val">'+ic.qty+'</span><button class="prod-qty-plus" data-action="qty-plus" data-code="'+esc(p.c)+'">+</button></div>';
+  } else {
+    h+='<button class="prod-add" data-action="add" data-code="'+esc(p.c)+'" data-desc="'+esc(p.d)+'" data-price="'+(p.p||0)+'" data-size="'+esc(p.s||'')+'" data-sec="'+esc(sec)+'" data-brand="'+esc(brand)+'">+</button>';
+  }
+  return h+'</div>';
+}
+
+function renderSections(){
+  let h='<div class="sec-list">';
+  ORDER.forEach((sec,i)=>{
+    const bs=SECTIONS[sec];if(!bs)return;
+    const allPs=Object.values(bs).flat();
+    const cn=countProds(allPs);
+    const hc=hiddenCount(allPs);
+    if(!adminMode&&cn===0)return;
+    h+='<div class="sec-card animate-in" style="animation-delay:'+(i*30)+'ms" data-action="nav-section" data-sec="'+esc(sec)+'"><div class="sec-icon">'+(ICONS[sec]||'\u{1F4CB}')+'</div><div class="sec-info"><div class="sec-name">'+esc(sec)+'</div><div class="sec-meta">'+Object.keys(bs).length+' brands \u00B7 '+cn+' products'+(adminMode&&hc?' <span class="hidden-count-badge">'+hc+' hidden</span>':'')+'</div></div><span style="color:var(--text3);font-size:20px">\u203A</span></div>';
+  });
+  return h+'</div>';
+}
+
+function renderBrands(){
+  const bs=SECTIONS[curSection]||{};
+  const entries=Object.entries(bs);/* preserve catalog-data.js insertion order (mirrors HHB PDF) */
+  let h='';
+  /* Guide button at top of section */
+  const guideUrl=SECTION_GUIDES&&SECTION_GUIDES[curSection];
+  if(guideUrl)h+='<button class="guide-btn" data-action="open-guide" data-url="'+esc(guideUrl)+'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>\uD83D\uDCD6 View in HHB Buying Guide</button>';
+  h+='<div class="brand-grid">';
+  entries.forEach(([bn,ps],i)=>{
+    const cn=countProds(ps);
+    const hc=hiddenCount(ps);
+    if(!adminMode&&cn===0)return;
+    h+='<div class="brand-card animate-in" style="animation-delay:'+(i*40)+'ms" data-action="nav-brand" data-sec="'+esc(curSection)+'" data-brand="'+esc(bn)+'"><div class="brand-emoji">'+(ICONS[curSection]||'\u{1F4CB}')+'</div><div class="brand-name">'+esc(bn)+'</div><div class="brand-count">'+cn+' products'+(adminMode&&hc?'<span class="hidden-count-badge">'+hc+'</span>':'')+'</div></div>';
+  });
+  return h+'</div>';
+}
+
+function renderProds(){
+  const allPs=SECTIONS[curSection]?.[curBrand]||[];
+  const ps=visibleProds(allPs);
+  if(!ps.length)return'<div class="empty-state"><div class="empty-state-icon">\u{1F4ED}</div>No products found</div>';
+  let h='';
+  /* Guide button at top of products */
+  const guideUrl=SECTION_GUIDES&&SECTION_GUIDES[curSection];
+  if(guideUrl)h+='<button class="guide-btn" data-action="open-guide" data-url="'+esc(guideUrl)+'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>\uD83D\uDCD6 View in HHB Buying Guide</button>';
+  h+='<div class="prod-list">';
+  ps.forEach((p,i)=>{h+=prodCard(p,curSection,curBrand,i);});
+  return h+'</div>';
+}
+
+function renderSearch(results){
+  if(!results.length)return'<div class="empty-state"><div class="empty-state-icon">\u{1F50D}</div>No products found</div>';
+  let h='<div class="prod-list">';let lastSec='';
+  results.forEach((p,i)=>{
+    if(p.section!==lastSec){lastSec=p.section;h+='<div class="search-section-label">'+esc(p.section)+'</div>';}
+    h+=prodCard(p,p.section,p.brand,i);
+  });
+  return h+'</div>';
+}
+
+function renderCartInner(){
+  const items=Object.entries(cart);
+  if(!items.length)return'<div class="cart-items"><div class="cart-empty"><div class="cart-empty-icon">\u{1F6D2}</div><div class="cart-empty-text">Your order is empty.<br>Browse and tap + to add items.</div></div></div>';
+  let h='<div class="cart-items">';
+  items.forEach(([code,it])=>{
+    h+='<div class="cart-item"><div class="cart-item-info"><div class="cart-item-desc">'+esc(it.desc)+'</div><div class="cart-item-code">'+esc(code)+(it.size?' \u00B7 '+esc(it.size):'')+'</div>';
+    if(adminMode&&it.price)h+='<div class="cart-item-price">'+fmt(it.price)+' \u00D7 '+it.qty+' = '+fmt(it.price*it.qty)+'</div>';
+    h+='</div><div class="cart-qty"><button data-action="cart-qty-minus" data-code="'+esc(code)+'">\u2212</button><span>'+it.qty+'</span><button data-action="cart-qty-plus" data-code="'+esc(code)+'">+</button></div></div>';
+  });
+  h+='</div>';
+  h+='<div class="cust-input-wrap"><div class="cust-input-label">Your name / shop name:</div><input class="cust-input" type="text" placeholder="e.g. Bella\'s Beauty" value="'+esc(custName)+'" oninput="custName=this.value"></div>';
+  h+='<div class="cart-footer"><div class="cart-total"><span class="cart-total-label">'+items.length+' item'+(items.length!==1?'s':'')+' \u00B7 '+cc()+' units</span>';
+  if(adminMode)h+='<span class="cart-total-amount">'+fmt(ct())+'</span>';
+  h+='</div><button class="cart-submit" data-action="review-order"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 14l2 2 4-4"/></svg>Review Order</button></div>';
+  return h;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   STAGE 2: FULL-SCREEN ORDER REVIEW
+   Shows all items, qty +/-, remove, name input, confirm send
+   ═══════════════════════════════════════════════════════════ */
+function renderReview(){
+  const items=Object.entries(cart);
+  if(!items.length)return'<div class="review-page"><div class="review-empty"><div class="review-empty-icon">\u{1F6D2}</div>Your order is empty.<br>Go back and add some products.</div></div>';
+  /* Group items by section */
+  const grouped={};
+  items.forEach(([code,it])=>{
+    const sec=it.sec||'Other';
+    if(!grouped[sec])grouped[sec]=[];
+    grouped[sec].push({code,...it});
+  });
+  let h='<div class="review-page">';
+  /* Customer name */
+  h+='<div class="review-cust-wrap"><div class="review-cust-label">\u{1F464} Your name / shop name</div><input class="review-cust-input" id="reviewCustName" type="text" placeholder="e.g. Bella\'s Beauty" value="'+esc(custName)+'"></div>';
+  /* Items by section */
+  const sectionKeys=Object.keys(grouped);
+  sectionKeys.forEach(sec=>{
+    h+='<div class="review-section-label">'+(ICONS[sec]||'\u{1F4CB}')+' '+esc(sec)+' ('+grouped[sec].length+')</div>';
+    grouped[sec].forEach(it=>{
+      h+='<div class="review-item" data-rcode="'+esc(it.code)+'">';
+      h+='<div class="review-item-info"><div class="review-item-desc">'+esc(it.desc)+'</div><div class="review-item-meta">'+esc(it.code)+(it.size?' \u00B7 '+esc(it.size):'')+'</div></div>';
+      h+='<div class="review-qty"><button data-action="review-qty-minus" data-code="'+esc(it.code)+'">\u2212</button><span>'+it.qty+'</span><button data-action="review-qty-plus" data-code="'+esc(it.code)+'">+</button></div>';
+      h+='<button class="review-remove" data-action="review-remove" data-code="'+esc(it.code)+'" title="Remove">\u2715</button>';
+      h+='</div>';
+    });
+  });
+  h+='</div>';
+  return h;
+}
+
+function renderReviewFooter(){
+  const items=Object.entries(cart);
+  const cnt=cc();
+  let h='<div class="review-footer"><div class="review-total"><span class="review-total-label">'+items.length+' item'+(items.length!==1?'s':'')+' \u00B7 '+cnt+' units</span>';
+  if(adminMode)h+='<span class="review-total-amount">'+fmt(ct())+'</span>';
+  h+='</div><div class="review-btns"><button class="review-btn-back" data-action="review-back">\u2190 Edit</button><button class="review-btn-send" data-action="confirm-send"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.625.846 5.059 2.284 7.034L.789 23.492a.5.5 0 00.627.616l4.584-1.202A11.95 11.95 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-2.143 0-4.148-.573-5.873-1.583l-.424-.26-3.276.859.874-3.193-.266-.44A9.935 9.935 0 012 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>Confirm & Send</button></div></div>';
+  return h;
+}
+
+function renderOrders(){
+  if(!ordersLoaded)return'<div class="empty-state"><div class="empty-state-icon">\u{1F4CB}</div>Loading orders...</div>';
+  let h='<div style="padding:16px">';
+  h+='<button class="gen-excel-btn" data-action="gen-excel">\u{1F4CA} Generate HHB Excel</button>';
+  if(!orders.length){h+='<div class="empty-state">No orders yet</div>';return h+'</div>';}
+  orders.forEach(o=>{
+    let items=o.items;if(typeof items==='string')items=JSON.parse(items);
+    h+='<div class="ord-card"><div class="ord-head"><span class="ord-name">'+esc(o.customer)+'</span><span class="ord-status '+(o.status||'pending')+'">'+(o.status||'pending')+'</span></div><div class="ord-date">'+esc(o.date)+'</div><div class="ord-items"><table>';
+    items.forEach(it=>{h+='<tr><td style="font-weight:700;width:70px">'+esc(it.code)+'</td><td style="width:50px">\u00D7 '+it.qty+'</td><td style="color:var(--text2)">'+esc((it.desc||'').substring(0,45))+'</td></tr>';});
+    h+='</table></div>';
+    if((o.status||'pending')==='pending')h+='<div class="ord-btns"><button class="ord-confirm-btn" data-action="confirm-order" data-id="'+o.id+'">\u2713 Confirm</button><button class="ord-reject-btn" data-action="reject-order" data-id="'+o.id+'">\u2715 Reject</button></div>';
+    h+='</div>';
+  });
+  return h+'</div>';
+}
+
+/* ═══════════════════════════════════════════════════════════
+   ADMIN: PRODUCT MANAGEMENT
+   ═══════════════════════════════════════════════════════════ */
+function renderAdminTabs(){
+  const tabs=[{id:'orders',label:'\u{1F4CB} Orders'},{id:'hidden',label:'\u{1F6AB} Hidden'},{id:'reconcile',label:'\u{1F504} Reconcile'},{id:'addnew',label:'\u2795 Add New'}];
+  let h='<div class="admin-tab-bar">';
+  tabs.forEach(t=>{h+='<div class="admin-tab'+(adminTab===t.id?' active':'')+'" data-action="admin-tab" data-tab="'+t.id+'">'+t.label+'</div>';});
+  return h+'</div>';
+}
+
+function renderHiddenProducts(){
+  let allHidden=[];
+  for(const sec of ORDER){
+    const bs=SECTIONS[sec];if(!bs)continue;
+    for(const[bn,ps]of Object.entries(bs)){
+      for(const p of ps){
+        if(p.h)allHidden.push({...p,section:sec,brand:bn});
+      }
+    }
+  }
+  let h='<div class="admin-panel">';
+  h+='<div class="admin-card"><h4>\u{1F6AB} Hidden Products ('+allHidden.length+')</h4><p>These products are not in the current HHB price list. Customers cannot see them. Tap "Show" to make them visible again.</p></div>';
+  if(!allHidden.length){h+='<div class="empty-state"><div class="empty-state-icon">\u2705</div>All products are visible!</div>';return h+'</div>';}
+  h+='<div class="prod-list">';
+  allHidden.forEach((p,i)=>{h+=prodCard(p,p.section,p.brand,i);});
+  h+='</div></div>';
+  return h;
+}
+
+function renderReconcile(){
+  let h='<div class="admin-panel">';
+  h+='<div class="admin-card"><h4>\u{1F504} Monthly Reconciliation</h4><p>Upload the latest HHB agent price/product Excel. I\'ll compare it against the current catalog and show you what to add, hide, or keep.</p></div>';
+  h+='<div class="file-drop" id="reconDrop"><div class="file-drop-icon">\u{1F4C4}</div><div class="file-drop-text">Tap to select Excel file<br><small>.xlsx format</small></div><input type="file" id="reconFile" accept=".xlsx,.xls"></div>';
+  if(reconResult){
+    h+='<div class="recon-result">';
+    h+='<div class="recon-stat recon-match">\u2705 '+reconResult.matched+' products matched</div>';
+    h+='<div class="recon-stat recon-remove">\u{1F6AB} '+reconResult.toHide.length+' in catalog but NOT in Excel (will be hidden)</div>';
+    h+='<div class="recon-stat recon-add">\u2795 '+reconResult.toAdd.length+' in Excel but NOT in catalog (new products)</div>';
+    if(reconResult.toHide.length){
+      h+='<div style="margin-top:10px"><strong>Products to hide:</strong>';
+      reconResult.toHide.slice(0,20).forEach(p=>{h+='<br>\u2022 '+esc(p.c)+' — '+esc((p.d||'').substring(0,50));});
+      if(reconResult.toHide.length>20)h+='<br>...and '+(reconResult.toHide.length-20)+' more';
+      h+='</div>';
+    }
+    if(reconResult.toAdd.length){
+      h+='<div style="margin-top:10px"><strong>New products to add ('+reconResult.toAdd.length+'):</strong>';
+      reconResult.toAdd.slice(0,20).forEach(p=>{h+='<br>\u2022 '+esc(p.code)+' — '+esc((p.product||'').substring(0,50));});
+      if(reconResult.toAdd.length>20)h+='<br>...and '+(reconResult.toAdd.length-20)+' more';
+      h+='</div>';
+    }
+    if(reconResult.toHide.length||reconResult.unhidden)h+='<div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap">';
+    if(reconResult.toHide.length)h+='<button class="admin-btn admin-btn-red" data-action="recon-apply-hide">\u{1F6AB} Hide '+reconResult.toHide.length+' products</button>';
+    if(reconResult.unhidden)h+='<button class="admin-btn admin-btn-green" data-action="recon-apply-unhide">\u2705 Unhide '+reconResult.unhidden+' products</button>';
+    if(reconResult.toHide.length||reconResult.unhidden)h+='</div>';
+    h+='</div>';
+  }
+  h+='</div>';
+  return h;
+}
+
+function renderAddNew(){
+  let h='<div class="admin-panel">';
+  h+='<div class="admin-card"><h4>\u2795 Add New Product</h4><p>Add a product to the catalog. Choose a section and brand, enter the code and description.</p></div>';
+  h+='<div class="admin-card">';
+  h+='<div class="npf-row"><label>Section</label><select id="npfSection">';
+  ORDER.forEach(s=>{h+='<option value="'+esc(s)+'">'+esc(s)+'</option>';});
+  h+='</select></div>';
+  h+='<div class="npf-row"><label>Brand</label><input id="npfBrand" type="text" placeholder="e.g. CADIVEU"></div>';
+  h+='<div class="npf-row"><label>Product Code</label><input id="npfCode" type="text" placeholder="e.g. P999"></div>';
+  h+='<div class="npf-row"><label>Description</label><input id="npfDesc" type="text" placeholder="e.g. BRASIL CACAU KIT 1LTR"></div>';
+  h+='<div class="npf-row"><label>Size (optional)</label><input id="npfSize" type="text" placeholder="e.g. 1L"></div>';
+  h+='<div style="margin-top:14px"><button class="admin-btn admin-btn-primary" data-action="add-new-product">\u2795 Add Product</button></div>';
+  h+='</div></div>';
+  return h;
+}
+
+function processReconcileFile(file){
+  const reader=new FileReader();
+  reader.onload=function(e){
+    try{
+      const data=new Uint8Array(e.target.result);
+      const workbook=XLSX.read(data,{type:'array'});
+      const sheet=workbook.Sheets[workbook.SheetNames[0]];
+      const rows=XLSX.utils.sheet_to_json(sheet,{header:1});
+      const excelCodes=new Set();
+      let headerRow=-1;
+      for(let i=0;i<Math.min(rows.length,10);i++){
+        const row=rows[i];
+        if(row&&row[0]&&String(row[0]).toLowerCase()==='code'){headerRow=i;break;}
+      }
+      const startRow=headerRow>=0?headerRow+1:4;
+      for(let i=startRow;i<rows.length;i++){
+        const code=String(rows[i]?.[0]||'').trim();
+        if(code&&code!=='nan'&&code!=='Code')excelCodes.add(code);
+      }
+      // Build result
+      const catalogCodes=new Set();
+      const catalogMap={};
+      for(const sec of ORDER){
+        const bs=SECTIONS[sec];if(!bs)continue;
+        for(const[bn,ps]of Object.entries(bs)){
+          for(const p of ps){catalogCodes.add(p.c);catalogMap[p.c]={...p,section:sec,brand:bn};}
+        }
+      }
+      const toHide=[];const toAdd=[];let matched=0;let unhidden=0;
+      catalogCodes.forEach(c=>{
+        if(excelCodes.has(c)){matched++;if(catalogMap[c].h)unhidden++;}
+        else toHide.push(catalogMap[c]);
+      });
+      // New excel codes
+      const excelRows=[];
+      for(let i=startRow;i<rows.length;i++){
+        const code=String(rows[i]?.[0]||'').trim();
+        if(code&&!catalogCodes.has(code)&&code!=='nan'&&code!=='Code'){
+          excelRows.push({code,product:String(rows[i]?.[1]||''),category:String(rows[i]?.[2]||'')});
+        }
+      }
+      reconResult={matched,toHide,toAdd:excelRows,unhidden,excelCodes};
+      render();
+      toast('Reconciliation complete!');
+    }catch(err){toast('Error reading Excel: '+err.message);console.error(err);}
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function applyReconHide(){
+  if(!reconResult)return;
+  let count=0;
+  reconResult.toHide.forEach(p=>{
+    const sec=SECTIONS[p.section];if(!sec)return;
+    const brand=sec[p.brand];if(!brand)return;
+    const prod=brand.find(x=>x.c===p.c);
+    if(prod){prod.h=1;count++;}
+  });
+  resetIndex();
+  toast(count+' products hidden');
+  reconResult.toHide=[];
+  render();
+  saveCatalogToServer();
+}
+
+function applyReconUnhide(){
+  if(!reconResult||!reconResult.excelCodes)return;
+  let count=0;
+  for(const sec of ORDER){
+    const bs=SECTIONS[sec];if(!bs)continue;
+    for(const[bn,ps]of Object.entries(bs)){
+      for(const p of ps){
+        if(p.h&&reconResult.excelCodes.has(p.c)){delete p.h;count++;}
+      }
+    }
+  }
+  resetIndex();
+  toast(count+' products unhidden');
+  reconResult.unhidden=0;
+  render();
+  saveCatalogToServer();
+}
+
+function toggleProductHidden(code,hide){
+  for(const sec of ORDER){
+    const bs=SECTIONS[sec];if(!bs)continue;
+    for(const[bn,ps]of Object.entries(bs)){
+      const p=ps.find(x=>x.c===code);
+      if(p){if(hide)p.h=1;else delete p.h;resetIndex();render();saveCatalogToServer();toast(hide?'Product hidden':'Product shown');return;}
+    }
+  }
+}
+
+function addNewProduct(){
+  const sec=document.getElementById('npfSection')?.value;
+  const brand=(document.getElementById('npfBrand')?.value||'').trim();
+  const code=(document.getElementById('npfCode')?.value||'').trim();
+  const desc=(document.getElementById('npfDesc')?.value||'').trim();
+  const size=(document.getElementById('npfSize')?.value||'').trim();
+  if(!sec||!brand||!code||!desc){toast('Fill in section, brand, code and description');return;}
+  // Check duplicate
+  for(const s of ORDER){const bs=SECTIONS[s];if(!bs)continue;for(const[bn,ps]of Object.entries(bs)){if(ps.find(p=>p.c===code)){toast('Code '+code+' already exists!');return;}}}
+  // Add to SECTIONS
+  if(!SECTIONS[sec])SECTIONS[sec]={};
+  if(!SECTIONS[sec][brand])SECTIONS[sec][brand]=[];
+  const newProd={c:code,d:desc};
+  if(size)newProd.s=size;
+  SECTIONS[sec][brand].push(newProd);
+  resetIndex();
+  toast('Added '+code+' to '+brand);
+  render();
+  saveCatalogToServer();
+}
+
+function saveCatalogToServer(){
+  const jsContent='const ORDER='+JSON.stringify(ORDER)+';\nconst ICONS='+JSON.stringify(ICONS)+';\n\nconst SECTION_GUIDES = '+JSON.stringify(SECTION_GUIDES,null,2)+';\n\nconst SECTIONS='+JSON.stringify(SECTIONS)+';';
+  fetch(API_BASE+'save-catalog.php',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({pin:ADMIN_PIN,content:jsContent})}).then(r=>r.json()).then(d=>{if(d.ok)toast('Catalog saved');else toast('Save error: '+(d.error||'unknown'));}).catch(e=>{toast('Save failed');});
+}
+
+function render(){
+  const app=document.getElementById('app');let h='';
+  /* Header */
+  h+='<div class="hdr"><div class="hdr-top">';
+  if(curView!=='sections'&&curView!=='admin-orders')h+='<button class="hdr-back" data-action="back">\u2190</button>';
+  if(curView==='admin-orders')h+='<button class="hdr-back" data-action="back">\u2190</button>';
+  if(curView==='sections')h+='<div style="flex:1;min-width:0"><div class="hdr-title">HH&B Product Catalog</div><div class="hdr-sub">36 sections \u00B7 9,100+ products</div></div>';
+  else if(curView==='review')h+='<div style="flex:1;min-width:0"><div class="hdr-title">\u{1F4CB} Review Your Order</div><div class="hdr-sub">Check items before sending</div></div>';
+  else if(curView==='brands'){const bs=SECTIONS[curSection]||{};const allPs=Object.values(bs).flat();const cn=countProds(allPs);h+='<div style="flex:1;min-width:0"><div class="hdr-title">'+esc(curSection)+'</div><div class="hdr-sub">'+Object.keys(bs).length+' brands \u00B7 '+cn+' products</div></div>';}
+  else if(curView==='products'){const allPs=SECTIONS[curSection]?.[curBrand]||[];const cn=countProds(allPs);h+='<div style="flex:1;min-width:0"><div class="hdr-title">'+esc(curBrand)+'</div><div class="hdr-sub">'+esc(curSection)+' \u00B7 '+cn+' products</div></div>';}
+  else if(curView==='admin-orders')h+='<div style="flex:1"><div class="hdr-title">Admin Panel</div><div class="hdr-sub">Product Management</div></div>';
+  if(adminMode)h+='<span class="admin-badge" data-action="admin-exit">ADMIN \u2715</span>';
+  if(adminMode&&curView!=='admin-orders')h+='<span class="admin-orders-btn" data-action="admin-orders">\u2699 Admin</span>';
+  h+='</div></div>';
+
+  /* Search bar (not on admin-orders or review) */
+  if(curView!=='admin-orders'&&curView!=='review'){
+    h+='<div class="search-wrap"><div class="search-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg><input id="si" type="text" placeholder="Search products..." value="'+esc(searchQuery)+'">';
+    if(searchQuery)h+='<button class="search-clear" data-action="clear-search">\u2715</button>';
+    h+='</div></div>';
+  }
+
+  /* Content */
+  h+='<div class="content">';
+  if(searchQuery.trim().length>=2)h+=renderSearch(searchProds(searchQuery));
+  else if(curView==='sections')h+=renderSections();
+  else if(curView==='brands')h+=renderBrands();
+  else if(curView==='products')h+=renderProds();
+  else if(curView==='review')h+=renderReview();
+  else if(curView==='admin-orders'){
+    h+=renderAdminTabs();
+    if(adminTab==='orders')h+=renderOrders();
+    else if(adminTab==='hidden')h+=renderHiddenProducts();
+    else if(adminTab==='reconcile')h+=renderReconcile();
+    else if(adminTab==='addnew')h+=renderAddNew();
+  }
+  h+='</div>';
+
+  /* Cart FAB (not on admin-orders or review) */
+  if(curView!=='admin-orders'&&curView!=='review'){
+    const cnt=cc();
+    h+='<button class="cart-fab'+(cnt?'':' empty')+'" data-action="toggle-cart">\u{1F6D2}';
+    if(cnt)h+='<span class="cart-fab-badge">'+cnt+'</span>';
+    h+='</button>';
+  }
+
+  /* FIX #2: Admin lock button (not on review) */
+  if(curView!=='review')h+='<button class="admin-lock'+(adminMode?' active':'')+'" data-action="admin-lock" title="Admin">\u2699</button>';
+
+  /* Review footer (only on review view) */
+  if(curView==='review'&&Object.keys(cart).length)h+=renderReviewFooter();
+
+  /* Cart drawer (not on review) */
+  if(curView!=='review'){
+    h+='<div class="cart-overlay'+(cartOpen?' open':'')+'" data-action="close-cart"></div><div class="cart-drawer'+(cartOpen?' open':'')+'">';
+    h+='<div class="cart-handle"></div><div class="cart-header"><span class="cart-title">Your Order</span>';
+    if(Object.keys(cart).length)h+='<button class="cart-clear" data-action="clear-cart">Clear all</button>';
+    h+='</div>'+renderCartInner()+'</div>';
+  }
+
+  /* Toast */
+  h+='<div class="toast'+(toastMsg?' show':'')+'">'+esc(toastMsg)+'</div>';
+
+  /* PIN overlay */
+  if(showPin)h+='<div class="pin-overlay"><div class="pin-box"><h3>\u{1F512} Admin PIN</h3><input id="pinInput" type="password" maxlength="4" inputmode="numeric"><div class="pin-btns"><button class="pin-cancel" data-action="pin-cancel">Cancel</button><button class="pin-confirm" data-action="pin-confirm">Enter</button></div></div></div>';
+
+  app.innerHTML=h;
+  if(showPin)document.getElementById('pinInput')?.focus();
+
+  /* Attach search listener (non-destructive) */
+  const si=document.getElementById('si');
+  if(si){
+    si.addEventListener('input',function(e){
+      searchQuery=e.target.value;
+      if(searchTimer)clearTimeout(searchTimer);
+      if(!searchQuery.trim()){
+        const ct=document.querySelector('.content');
+        if(ct&&curView!=='admin-orders'){
+          if(curView==='sections')ct.innerHTML=renderSections();
+          else if(curView==='brands')ct.innerHTML=renderBrands();
+          else if(curView==='products')ct.innerHTML=renderProds();
+        }
+        return;
+      }
+      searchTimer=setTimeout(()=>{
+        const results=searchProds(searchQuery);
+        const ct=document.querySelector('.content');
+        if(ct)ct.innerHTML=renderSearch(results);
+        // Re-focus search input
+        const inp=document.getElementById('si');
+        if(inp){inp.value=searchQuery;inp.focus();inp.setSelectionRange(searchQuery.length,searchQuery.length);}
+      },250);
+    });
+  }
+  /* Sync review customer name */
+  const rcn=document.getElementById('reviewCustName');
+  if(rcn)rcn.addEventListener('input',function(e){custName=e.target.value;});
+}
+
+/* ═══════════════════════════════════════════════════════════
+   EVENT DELEGATION
+   ═══════════════════════════════════════════════════════════ */
+document.addEventListener('click',function(e){
+  const el=e.target.closest('[data-action]');
+  if(!el)return;
+  const a=el.dataset.action;
+
+  if(a==='nav-section')nav('brands',el.dataset.sec);
+  else if(a==='nav-brand')nav('products',el.dataset.sec,el.dataset.brand);
+  else if(a==='add'){
+    e.stopPropagation();
+    addToCart(el.dataset.code,el.dataset.desc,parseFloat(el.dataset.price)||0,el.dataset.size,el.dataset.sec,el.dataset.brand);
+  }
+  else if(a==='qty-plus'){e.stopPropagation();setQty(el.dataset.code,1);}
+  else if(a==='qty-minus'){e.stopPropagation();setQty(el.dataset.code,-1);}
+  else if(a==='cart-qty-plus'){e.stopPropagation();setQty(el.dataset.code,1);cartOpen=true;render();}
+  else if(a==='cart-qty-minus'){e.stopPropagation();setQty(el.dataset.code,-1);cartOpen=true;render();}
+  else if(a==='back')goBack();
+  else if(a==='toggle-cart'){cartOpen=!cartOpen;render();}
+  else if(a==='close-cart'){cartOpen=false;render();}
+  else if(a==='clear-cart'){cart={};sv();render();}
+  else if(a==='send-order')sendOrder();
+  /* Review flow */
+  else if(a==='review-order'){
+    if(!Object.keys(cart).length)return;
+    prevView=curView;prevSection=curSection;prevBrand=curBrand;
+    cartOpen=false;curView='review';render();
+    document.querySelector('.content')?.scrollTo(0,0);
+  }
+  else if(a==='review-back'){
+    curView=prevView||'sections';curSection=prevSection;curBrand=prevBrand;
+    render();
+  }
+  else if(a==='review-qty-plus'){e.stopPropagation();setQty(el.dataset.code,1);render();}
+  else if(a==='review-qty-minus'){e.stopPropagation();setQty(el.dataset.code,-1);render();}
+  else if(a==='review-remove'){
+    e.stopPropagation();delete cart[el.dataset.code];sv();
+    if(!Object.keys(cart).length){curView=prevView||'sections';curSection=prevSection;curBrand=prevBrand;}
+    render();
+  }
+  else if(a==='confirm-send'){
+    /* Grab customer name from review input */
+    const nameInput=document.getElementById('reviewCustName');
+    if(nameInput)custName=nameInput.value;
+    sendOrder();
+  }
+  else if(a==='clear-search'){searchQuery='';render();document.getElementById('si')?.focus();}
+  /* FIX #2: Admin lock button */
+  else if(a==='admin-lock'){
+    if(adminMode){adminMode=false;curView='sections';resetIndex();toast('Admin off');render();}
+    else{showPin=true;render();}
+  }
+  else if(a==='pin-cancel'){showPin=false;render();}
+  else if(a==='pin-confirm'){checkPin(document.getElementById('pinInput')?.value);}
+  else if(a==='admin-exit'){adminMode=false;curView='sections';resetIndex();toast('Admin off');render();}
+  else if(a==='admin-orders'){curView='admin-orders';adminTab='orders';loadOrders();render();}
+  else if(a==='admin-tab'){adminTab=el.dataset.tab;if(adminTab==='orders')loadOrders();reconResult=null;render();}
+  else if(a==='confirm-order')confirmOrder(el.dataset.id);
+  else if(a==='reject-order')rejectOrder(el.dataset.id);
+  else if(a==='gen-excel')generateExcel();
+  else if(a==='unhide-prod'){toggleProductHidden(el.dataset.code,false);}
+  else if(a==='hide-prod'){toggleProductHidden(el.dataset.code,true);}
+  else if(a==='recon-apply-hide'){applyReconHide();}
+  else if(a==='recon-apply-unhide'){applyReconUnhide();}
+  else if(a==='add-new-product'){addNewProduct();}
+  else if(a==='open-guide'){window.open(el.dataset.url,'_blank');}
+});
+
+/* PIN: allow Enter key */
+document.addEventListener('keydown',function(e){
+  if(showPin&&e.key==='Enter'){checkPin(document.getElementById('pinInput')?.value);}
+});
+
+/* ═══════════════════════════════════════════════════════════
+   PRODUCT CODE TAP → OPEN HHB BUYING GUIDE PDF
+   Each section's PDF from SECTION_GUIDES shows all products
+   with professional kit photos, grouped as HHB intended.
+   ═══════════════════════════════════════════════════════════ */
+(function(){
+  document.addEventListener('click',function(e){
+    const codeNode=e.target.closest('.prod-code');
+    if(!codeNode)return;
+    /* Find section from closest prod-card data attribute */
+    const card=codeNode.closest('.prod-card');
+    if(!card)return;
+    const sec=card.dataset.psec||'';
+    const guideUrl=typeof SECTION_GUIDES!=='undefined'&&SECTION_GUIDES[sec];
+    if(guideUrl){
+      window.open(guideUrl,'_blank');
+    } else {
+      /* Fallback: section has no guide PDF (e.g. Other Products) */
+      const modal=document.getElementById('photoModal');
+      const codeEl=document.getElementById('photoCode');
+      const descEl=document.getElementById('photoDesc');
+      const contentEl=document.getElementById('photoContent');
+      codeEl.textContent=codeNode.textContent.trim();
+      const descNode=card.querySelector('.prod-desc');
+      descEl.textContent=descNode?descNode.textContent.trim():'';
+      contentEl.innerHTML='<div class="photo-modal-error"><span>\uD83D\uDCE6</span>No buying guide available<br>for this section</div>';
+      modal.classList.add('active');
+    }
+  });
+  /* Keep modal close behavior for fallback */
+  const modal=document.getElementById('photoModal');
+  const closeBtn=document.getElementById('photoClose');
+  function closeModal(){modal.classList.remove('active');document.getElementById('photoContent').innerHTML='';}
+  closeBtn.addEventListener('click',function(e){e.stopPropagation();closeModal();});
+  modal.addEventListener('click',function(e){if(e.target===modal)closeModal();});
+})();
+
+/* ─── INIT ─── */
+ld();
+render();
+
+/* Reconcile file input — delegated since DOM rebuilds */
+document.addEventListener('click',function(e){
+  if(e.target.closest('#reconDrop')){
+    document.getElementById('reconFile')?.click();
+  }
+});
+document.addEventListener('change',function(e){
+  if(e.target.id==='reconFile'&&e.target.files.length){
+    processReconcileFile(e.target.files[0]);
+  }
+});
+</script>
+<!-- Guide functionality built into app.html — catalog-guide.js no longer needed -->
+</body>
+</html>

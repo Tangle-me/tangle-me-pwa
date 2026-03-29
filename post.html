@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    <meta name="theme-color" content="#667eea">
+    <title>Post Ad - Tangle-me</title>
+    <link rel="manifest" href="/manifest.json">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.0.0/css/flag-icons.min.css">
+    <!-- Leaflet CSS for Pin on Map -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+          integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+          crossorigin=""/>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: rgba(102,126,234,0.2); }
+        html, body { width: 100%; min-height: 100vh; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; -webkit-font-smoothing: antialiased; }
+        body { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #333; padding: 0; }
+
+        .page-header {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0.75rem 1rem; background: rgba(255,255,255,0.12);
+            backdrop-filter: blur(10px); border-bottom: 1px solid rgba(255,255,255,0.2);
+            position: sticky; top: 0; z-index: 100;
+        }
+        .back-btn {
+            background: rgba(255,255,255,0.2); border: 2px solid rgba(255,255,255,0.3);
+            color: #fff; border-radius: 10px; padding: 0.5rem 1rem; font-weight: 600;
+            font-size: 0.9rem; cursor: pointer; display: flex; align-items: center; gap: 0.4rem;
+        }
+        .page-title { color: #fff; font-size: 1.1rem; font-weight: 700; }
+        .tier-badge {
+            padding: 0.3rem 0.7rem; border-radius: 20px; font-weight: 700;
+            font-size: 0.75rem; color: #fff;
+        }
+        .tier-free { background: #6b7280; }
+        .tier-basic { background: linear-gradient(135deg, #3b82f6, #2563eb); }
+        .tier-pro { background: linear-gradient(135deg, #8b5cf6, #7c3aed); }
+
+        .post-container {
+            max-width: 500px; margin: 1rem auto; padding: 0 0.75rem 2rem;
+        }
+        .card {
+            background: #fff; border-radius: 16px; padding: 1.25rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15); margin-bottom: 1rem;
+        }
+        .card-title {
+            font-size: 0.85rem; font-weight: 700; color: #4a5568;
+            text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.75rem;
+            display: flex; align-items: center; gap: 0.5rem;
+        }
+
+        /* Text input */
+        .ad-textarea {
+            width: 100%; min-height: 100px; padding: 0.9rem; border: 2px solid #e2e8f0;
+            border-radius: 10px; font-size: 1rem; font-family: inherit; color: #1a202c;
+            resize: vertical; transition: border-color 0.2s;
+        }
+        .ad-textarea:focus { outline: none; border-color: #667eea; }
+        .ad-textarea::placeholder { color: #a0aec0; }
+        .char-count { text-align: right; font-size: 0.75rem; color: #a0aec0; margin-top: 0.3rem; }
+
+        .contact-input {
+            width: 100%; padding: 0.8rem; border: 2px solid #e2e8f0; border-radius: 10px;
+            font-size: 0.95rem; font-family: inherit; color: #1a202c; margin-top: 0.5rem;
+        }
+        .contact-input:focus { outline: none; border-color: #667eea; }
+        .contact-input::placeholder { color: #a0aec0; }
+
+        /* Location */
+        .location-status {
+            background: #f0f9ff; padding: 0.75rem; border-radius: 10px;
+            display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; color: #2d3748;
+        }
+        .location-status.detecting { color: #667eea; }
+        .location-status.found { border: 2px solid #4ade80; background: #f0fdf4; }
+        .location-status.error { border: 2px solid #f87171; background: #fef2f2; color: #dc2626; }
+
+        /* Location options */
+        .location-options { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 0.5rem; }
+        .loc-opt-btn {
+            display: flex; align-items: center; gap: 0.75rem; width: 100%;
+            padding: 0.75rem 0.85rem; background: #f7fafc; border: 2px solid #e2e8f0;
+            border-radius: 10px; cursor: pointer; transition: all 0.2s; text-align: left;
+            font-family: inherit; font-size: 0.9rem; color: #2d3748;
+        }
+        .loc-opt-btn:active { transform: scale(0.98); }
+        .loc-opt-btn.selected { border-color: #667eea; background: #f0f4ff; }
+        .loc-opt-title { font-weight: 600; }
+        .loc-opt-sub { font-size: 0.78rem; color: #718096; }
+
+        /* Inline map for Pin on Map */
+        .post-map-container {
+            display: none; border-radius: 10px; overflow: hidden;
+            margin-top: 0.5rem; border: 2px solid #e2e8f0; height: 260px;
+        }
+        .post-map-container.show { display: block; }
+        .post-map-container .leaflet-container { height: 100%; width: 100%; }
+        .post-map-hint {
+            text-align: center; font-size: 0.78rem; color: #718096; margin-top: 0.3rem; display: none;
+        }
+
+        /* Photos */
+        .photo-section { margin-top: 0; }
+        .add-photos-btn {
+            width: 100%; padding: 14px; border: none; border-radius: 10px;
+            font-size: 15px; font-weight: 700; cursor: pointer; color: #fff;
+            display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+            transition: transform 0.2s;
+        }
+        .add-photos-btn:not(:disabled):active { transform: scale(0.98); }
+        .add-photos-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .add-photos-btn.basic { background: #3b82f6; }
+        .add-photos-btn.pro { background: linear-gradient(135deg, #667eea, #764ba2); }
+        .add-photos-btn.free { background: #a0aec0; }
+
+        .photo-counter {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 8px 12px; background: #f8fafc; border-radius: 8px; margin-top: 0.75rem;
+            font-size: 13px;
+        }
+        .photo-counter-label { color: #555; }
+        .photo-counter-value { font-weight: 600; color: #667eea; }
+
+        .photo-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            gap: 0.5rem; margin-top: 0.75rem;
+        }
+        .photo-thumb {
+            position: relative; aspect-ratio: 1; border-radius: 8px; overflow: hidden;
+            background: #f3f4f6; border: 2px solid #e2e8f0;
+        }
+        .photo-thumb img { width: 100%; height: 100%; object-fit: cover; }
+        .photo-thumb-idx {
+            position: absolute; top: 3px; left: 3px; background: rgba(0,0,0,0.5); color: #fff;
+            font-size: 0.65rem; padding: 1px 6px; border-radius: 4px; font-weight: 700;
+        }
+        .photo-thumb-idx.main { background: #3b82f6; }
+        .photo-thumb-remove {
+            position: absolute; top: 3px; right: 3px; background: rgba(220,38,38,0.85);
+            color: #fff; border: none; border-radius: 50%; width: 22px; height: 22px;
+            font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+        }
+
+        /* Post button */
+        .post-btn {
+            width: 100%; padding: 1rem; border: none; border-radius: 12px;
+            font-size: 1.1rem; font-weight: 700; cursor: pointer; color: #fff;
+            background: linear-gradient(135deg, #10b981, #059669);
+            transition: transform 0.2s; margin-top: 0.5rem;
+        }
+        .post-btn:not(:disabled):hover { transform: translateY(-2px); }
+        .post-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+        .cancel-btn {
+            width: 100%; padding: 0.8rem; border: 1px solid #e2e8f0; border-radius: 10px;
+            background: #fff; color: #64748b; font-size: 0.9rem; cursor: pointer;
+            margin-top: 0.5rem;
+        }
+
+        /* Progress overlay */
+        .progress-overlay {
+            display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.7); z-index: 9999;
+            flex-direction: column; align-items: center; justify-content: center; gap: 1rem;
+        }
+        .progress-overlay.show { display: flex; }
+        .progress-text { color: #fff; font-size: 1.1rem; font-weight: 600; }
+        .progress-bar-track {
+            width: 80%; max-width: 300px; height: 8px; background: rgba(255,255,255,0.2);
+            border-radius: 4px; overflow: hidden;
+        }
+        .progress-bar-fill {
+            height: 100%; background: linear-gradient(135deg, #10b981, #059669);
+            width: 0%; transition: width 0.3s;
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%);
+            padding: 14px 28px; border-radius: 50px; font-size: 15px; font-weight: 600;
+            z-index: 99999; box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            white-space: nowrap; transition: opacity 0.5s; color: #fff;
+        }
+        .toast.success { background: linear-gradient(135deg, #10b981, #059669); }
+        .toast.info { background: linear-gradient(135deg, #667eea, #764ba2); }
+        .toast.error { background: linear-gradient(135deg, #ef4444, #dc2626); }
+
+        .tip {
+            font-size: 0.8rem; color: #718096; margin-top: 0.5rem; line-height: 1.4;
+        }
+
+        /* Upgrade prompt for free tier */
+        .upgrade-prompt {
+            text-align: center; padding: 1.5rem; background: #fffbeb;
+            border: 2px dashed #f59e0b; border-radius: 12px;
+        }
+        .upgrade-prompt-title { font-weight: 700; color: #d97706; margin-bottom: 0.5rem; }
+        .upgrade-prompt-btn {
+            background: linear-gradient(135deg, #667eea, #764ba2); color: #fff;
+            border: none; padding: 0.7rem 1.5rem; border-radius: 10px; font-weight: 600;
+            cursor: pointer; margin-top: 0.75rem;
+        }
+
+        .not-logged-in {
+            text-align: center; padding: 3rem 2rem; color: #fff;
+        }
+        .not-logged-in-title { font-size: 1.3rem; font-weight: 700; margin-bottom: 0.5rem; }
+        .not-logged-in-btn {
+            background: #fff; color: #667eea; border: none; padding: 0.9rem 2rem;
+            border-radius: 12px; font-size: 1rem; font-weight: 700; cursor: pointer;
+            margin-top: 1rem;
+        }
+    </style>
+</head>
+<body>
+
+<div class="page-header">
+    <button class="back-btn" onclick="goBack()" data-i18n="back">← Back</button>
+    <span class="page-title" data-i18n="post_your_ad">Post Your Ad</span>
+    <span class="tier-badge" id="tierBadge">FREE</span>
+</div>
+
+<div class="post-container" id="mainContent">
+    <!-- Filled by JS based on auth state -->
+</div>
+
+<!-- Progress overlay -->
+<div class="progress-overlay" id="progressOverlay">
+    <div class="progress-text" id="progressText" data-i18n="uploading_photos">Uploading photos...</div>
+    <div class="progress-bar-track"><div class="progress-bar-fill" id="progressFill"></div></div>
+</div>
+
+<script src="/i18n.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+        crossorigin=""></script>
+
+<script>
+// ─── STATE ───
+let currentUser = null;
+let userSubscription = { tier: 'free', photos_used: 0 };
+let userPhotoCount = 0;
+let selectedPhotos = []; // { file: File, preview: blobURL }
+let locationData = { address: '', latitude: null, longitude: null };
+const MAX_PHOTOS = 20;
+
+// ─── INIT ───
+document.addEventListener('DOMContentLoaded', function() {
+    loadAuth();
+    if (!currentUser) {
+        renderNotLoggedIn();
+        return;
+    }
+    loadSubscriptionData();
+    updateTierBadge();
+    renderPostForm();
+    // Don't auto-detect — let user choose location method
+});
+
+function loadAuth() {
+    try {
+        const stored = localStorage.getItem('tangleme_current_user');
+        if (stored) currentUser = JSON.parse(stored);
+    } catch(e) { console.error('Auth load error:', e); }
+}
+
+function loadSubscriptionData() {
+    try {
+        const stored = localStorage.getItem('tangleme_subscription');
+        if (stored) userSubscription = JSON.parse(stored);
+    } catch(e) {}
+    // Also fetch fresh photo count
+    if (currentUser && currentUser.id) {
+        fetch('/api/get-photo-count.php?user_id=' + currentUser.id + '&tier=' + (userSubscription.tier || 'free'))
+            .then(r => r.json())
+            .then(d => { if (d.success) userPhotoCount = d.photo_count || 0; })
+            .catch(() => {});
+    }
+}
+
+function updateTierBadge() {
+    const badge = document.getElementById('tierBadge');
+    const tier = userSubscription.tier || 'free';
+    badge.textContent = tier.toUpperCase();
+    badge.className = 'tier-badge tier-' + tier;
+}
+
+function goBack() {
+    window.location.href = '/';
+}
+
+// ─── RENDER ───
+function renderNotLoggedIn() {
+    document.getElementById('mainContent').innerHTML = `
+        <div class="not-logged-in">
+            <div style="font-size: 3rem; margin-bottom: 1rem;">🔒</div>
+            <div class="not-logged-in-title" data-i18n="not_logged_in_title">Please log in to post ads</div>
+            <div style="opacity: 0.8; margin-bottom: 1rem;" data-i18n="not_logged_in_desc">Return to the main page to log in or register</div>
+            <button class="not-logged-in-btn" onclick="goBack()" data-i18n="go_main_page">← Go to Main Page</button>
+        </div>
+    `;
+    if (typeof i18n !== 'undefined') i18n.applyAll();
+}
+
+function renderPostForm() {
+    const tier = userSubscription.tier || 'free';
+    const isFree = tier === 'free';
+    const btnClass = isFree ? 'free' : (tier === 'pro' ? 'pro' : 'basic');
+
+    document.getElementById('mainContent').innerHTML = `
+        <div class="card">
+            <div class="card-title">📝 Your Ad</div>
+            <textarea class="ad-textarea" id="adText" placeholder="Describe what you want to advertise..."
+                      maxlength="2000" oninput="updateCharCount()"></textarea>
+            <div class="char-count" id="charCount">0 / 2000</div>
+
+            <div class="card-title" style="margin-top: 1rem;">📞 Contact <span style="color: #a0aec0; font-weight: 400; font-size: 0.8rem;">(Optional)</span></div>
+            <input class="contact-input" id="contactField" type="text"
+                   placeholder="Email, phone, or WhatsApp" maxlength="100">
+        </div>
+
+        <div class="card">
+            <div class="card-title">📍 Location</div>
+            <div class="location-options">
+                <button type="button" class="loc-opt-btn" id="autoDetectBtn" onclick="doAutoDetect()">
+                    <span style="font-size:1.2rem;">📡</span>
+                    <div>
+                        <div class="loc-opt-title">Use My Location</div>
+                        <div class="loc-opt-sub">GPS-based current location</div>
+                    </div>
+                </button>
+                <button type="button" class="loc-opt-btn" id="postPinMapBtn" onclick="openPostMap()">
+                    <span style="display:flex;align-items:center;justify-content:center;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+                            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" fill="#e53e3e"/>
+                            <circle cx="12" cy="9" r="2.8" fill="white"/>
+                        </svg>
+                    </span>
+                    <div>
+                        <div class="loc-opt-title">Pin on Map</div>
+                        <div class="loc-opt-sub">Advertise anywhere in the world</div>
+                    </div>
+                </button>
+            </div>
+            <div class="location-status" id="locationStatus" style="display:none;">
+                📍 Detecting...
+            </div>
+            <div class="post-map-container" id="postMapContainer">
+                <div id="postMap" style="height:100%;width:100%;"></div>
+            </div>
+            <div class="post-map-hint" id="postMapHint">Tap on the map to set your ad's location</div>
+        </div>
+
+        <div class="card photo-section">
+            <div class="card-title">📷 Photos</div>
+            ${isFree ? `
+                <div class="upgrade-prompt">
+                    <div class="upgrade-prompt-title">🔒 Photos require a subscription</div>
+                    <div style="font-size: 0.85rem; color: #92400e;">Basic (€2.99/mo) for 20 photos or Pro (€9.99/mo) for unlimited ads and photos (20 per ad)</div>
+                    <button class="upgrade-prompt-btn" onclick="window.location.href='/?openUpgrade=basic'">View Plans →</button>
+                </div>
+                <div style="margin-top:12px;opacity:0.55;pointer-events:none;">
+                    <div style="width:100%;padding:14px;background:linear-gradient(135deg,#f97316,#ea580c);color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:8px;filter:blur(2px);">📁 Smart Upload</div>
+                </div>
+                <div style="text-align:center;margin-top:4px;font-size:12px;color:#f97316;cursor:pointer;" onclick="window.location.href='/?openUpgrade=pro'">🔒 Pro (€9.99/mo) — Upload files, AI creates your ads</div>
+            ` : `
+                <button class="add-photos-btn ${btnClass}" id="addPhotosBtn" onclick="triggerPhotoPicker()">
+                    📷 Add Photos
+                </button>
+                <input type="file" id="photoInput" accept="image/*" multiple style="display:none;" onchange="onPhotosSelected(event)">
+                <div class="photo-counter" id="photoCounter" style="display:none;">
+                    <span class="photo-counter-label">This ad</span>
+                    <span class="photo-counter-value" id="photoCountText">0 / ${MAX_PHOTOS}</span>
+                </div>
+                <div class="photo-grid" id="photoGrid"></div>
+                <div class="tip" id="photoTip" style="display:none;">
+                    💡 First photo becomes the main image. Tap × to remove.
+                </div>
+                ${tier === 'pro' ? `
+                    <button onclick="window.location.href='/?openSmartUpload=1'" style="width:100%;margin-top:12px;padding:14px;background:linear-gradient(135deg,#f97316,#ea580c);color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">📁 Smart Upload</button>
+                    <div style="font-size:13px;color:#888;padding:4px 12px;text-align:center;">Upload files with text & photos — AI creates ads (20 photos per ad)</div>
+                ` : `
+                    <div style="margin-top:12px;opacity:0.55;pointer-events:none;">
+                        <div style="width:100%;padding:14px;background:linear-gradient(135deg,#f97316,#ea580c);color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:8px;filter:blur(2px);">📁 Smart Upload</div>
+                    </div>
+                    <div style="text-align:center;margin-top:4px;font-size:12px;color:#f97316;cursor:pointer;" onclick="window.location.href='/?openUpgrade=pro'">🔒 Pro (€9.99/mo) — Upload files, AI creates your ads</div>
+                `}
+            `}
+        </div>
+
+        <div class="card" style="background: transparent; box-shadow: none; padding: 0;">
+            <button class="post-btn" id="postBtn" onclick="submitAd()">✓ Post Ad</button>
+            <button class="cancel-btn" onclick="goBack()">Cancel</button>
+        </div>
+    `;
+}
+
+function updateCharCount() {
+    const ta = document.getElementById('adText');
+    const cc = document.getElementById('charCount');
+    if (ta && cc) cc.textContent = ta.value.length + ' / 2000';
+}
+
+// ─── LOCATION ───
+let postMap = null;
+let postMarker = null;
+
+function doAutoDetect() {
+    // Reset UI
+    hidePostMap();
+    document.querySelectorAll('.loc-opt-btn').forEach(b => b.classList.remove('selected'));
+    document.getElementById('autoDetectBtn').classList.add('selected');
+
+    const el = document.getElementById('locationStatus');
+    el.style.display = 'block';
+    el.className = 'location-status detecting';
+    el.innerHTML = '📡 Detecting your location...';
+
+    if (!navigator.geolocation) {
+        setLocationError('Geolocation not supported');
+        return;
+    }
+    navigator.geolocation.getCurrentPosition(
+        async function(pos) {
+            const lat = pos.coords.latitude;
+            const lng = pos.coords.longitude;
+            locationData.latitude = lat;
+            locationData.longitude = lng;
+            try {
+                const resp = await fetch('/api/geocode.php?lat=' + lat + '&lng=' + lng);
+                const data = await resp.json();
+                locationData.address = data.friendly_name || data.display_name || (lat.toFixed(4) + ', ' + lng.toFixed(4));
+            } catch(e) {
+                locationData.address = 'Location at ' + lat.toFixed(4) + ', ' + lng.toFixed(4);
+            }
+            el.className = 'location-status found';
+            el.innerHTML = '📍 ' + locationData.address;
+        },
+        function(err) {
+            setLocationError('Could not detect location. Please enable GPS and reload.');
+        },
+        { enableHighAccuracy: true, timeout: 15000, maximumAge: 60000 }
+    );
+}
+
+function openPostMap() {
+    document.querySelectorAll('.loc-opt-btn').forEach(b => b.classList.remove('selected'));
+    document.getElementById('postPinMapBtn').classList.add('selected');
+
+    const container = document.getElementById('postMapContainer');
+    if (container.classList.contains('show')) {
+        hidePostMap();
+        document.getElementById('postPinMapBtn').classList.remove('selected');
+        return;
+    }
+
+    container.classList.add('show');
+    document.getElementById('postMapHint').style.display = 'block';
+
+    // Hide the auto-detect status
+    document.getElementById('locationStatus').style.display = 'none';
+
+    if (!postMap) {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                function(pos) { initPostMap(pos.coords.latitude, pos.coords.longitude, 13); },
+                function() { initPostMap(0, 0, 2); },
+                { enableHighAccuracy: false, timeout: 5000, maximumAge: 300000 }
+            );
+        } else {
+            initPostMap(0, 0, 2);
+        }
+    } else {
+        setTimeout(() => postMap.invalidateSize(), 100);
+    }
+}
+
+function initPostMap(lat, lng, zoom) {
+    postMap = L.map('postMap').setView([lat, lng], zoom);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap',
+        maxZoom: 19
+    }).addTo(postMap);
+
+    postMap.on('click', async function(e) {
+        const clickLat = e.latlng.lat;
+        const clickLng = e.latlng.lng;
+
+        if (postMarker) postMap.removeLayer(postMarker);
+        postMarker = L.marker([clickLat, clickLng]).addTo(postMap);
+
+        locationData.latitude = clickLat;
+        locationData.longitude = clickLng;
+
+        let address = 'Location at ' + clickLat.toFixed(4) + ', ' + clickLng.toFixed(4);
+        try {
+            const resp = await fetch('/api/geocode.php?lat=' + clickLat + '&lng=' + clickLng);
+            const data = await resp.json();
+            if (data.friendly_name) address = data.friendly_name;
+            else if (data.display_name) address = data.display_name;
+        } catch(e) { console.error('Geocode failed:', e); }
+
+        locationData.address = address;
+
+        const el = document.getElementById('locationStatus');
+        el.style.display = 'block';
+        el.className = 'location-status found';
+        el.innerHTML = '📍 ' + address;
+    });
+
+    setTimeout(() => postMap.invalidateSize(), 100);
+}
+
+function hidePostMap() {
+    document.getElementById('postMapContainer').classList.remove('show');
+    document.getElementById('postMapHint').style.display = 'none';
+}
+
+function autoDetectLocation() {
+    // Legacy compatibility — now triggered via doAutoDetect()
+    doAutoDetect();
+}
+
+function setLocationError(msg) {
+    const el = document.getElementById('locationStatus');
+    if (el) { el.className = 'location-status error'; el.textContent = '⚠️ ' + msg; }
+}
+
+// ─── PHOTO SELECTION (NO UPLOAD — just local blob previews) ───
+function triggerPhotoPicker() {
+    const remaining = MAX_PHOTOS - selectedPhotos.length;
+    if (remaining <= 0) {
+        showToast('Maximum ' + MAX_PHOTOS + ' photos per ad reached.', 'info');
+        return;
+    }
+    // Basic tier: also check account limit
+    if (userSubscription.tier === 'basic') {
+        const accountRemaining = 20 - userPhotoCount - selectedPhotos.length;
+        if (accountRemaining <= 0) {
+            showUpgradePrompt('Account photo limit reached', 'You\'ve used all 20 photos across your ads. Upgrade to Pro for unlimited ads and photos (20 per ad).');
+            return;
+        }
+    }
+    document.getElementById('photoInput').click();
+}
+
+function onPhotosSelected(e) {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    const remaining = MAX_PHOTOS - selectedPhotos.length;
+    let added = 0;
+
+    for (let i = 0; i < files.length && added < remaining; i++) {
+        const f = files[i];
+        if (!['image/jpeg', 'image/png', 'image/gif', 'image/webp'].includes(f.type)) continue;
+        if (f.size > 10485760) {
+            showToast('File too large: ' + f.name, 'error');
+            continue;
+        }
+        selectedPhotos.push({ file: f, preview: URL.createObjectURL(f) });
+        added++;
+    }
+
+    if (files.length > added) {
+        const skipped = files.length - added;
+        if (userSubscription.tier === 'basic') {
+            showUpgradePrompt(
+                'Photo limit reached',
+                'You selected ' + files.length + ' photos but the maximum is ' + MAX_PHOTOS + ' per ad. ' + skipped + ' photo(s) were not added.\n\nUpgrade to Pro for unlimited ads and photos (20 per ad).'
+            );
+        } else {
+            showToast('You selected ' + files.length + ' photos — max ' + MAX_PHOTOS + ' per ad. ' + skipped + ' not added.', 'error');
+        }
+    }
+
+    e.target.value = '';
+    renderPhotoGrid();
+}
+
+function removePhoto(idx) {
+    if (selectedPhotos[idx]) {
+        URL.revokeObjectURL(selectedPhotos[idx].preview);
+        selectedPhotos.splice(idx, 1);
+        renderPhotoGrid();
+    }
+}
+
+function renderPhotoGrid() {
+    const grid = document.getElementById('photoGrid');
+    const counter = document.getElementById('photoCounter');
+    const tip = document.getElementById('photoTip');
+    const countText = document.getElementById('photoCountText');
+    const addBtn = document.getElementById('addPhotosBtn');
+
+    if (!grid) return;
+
+    if (selectedPhotos.length === 0) {
+        grid.innerHTML = '';
+        if (counter) counter.style.display = 'none';
+        if (tip) tip.style.display = 'none';
+        if (addBtn) addBtn.disabled = false;
+        return;
+    }
+
+    grid.innerHTML = selectedPhotos.map((p, i) => `
+        <div class="photo-thumb">
+            <img src="${p.preview}" alt="Photo ${i+1}">
+            <div class="photo-thumb-idx ${i === 0 ? 'main' : ''}">${i === 0 ? '★ Main' : (i+1)}</div>
+            <button class="photo-thumb-remove" onclick="removePhoto(${i})">×</button>
+        </div>
+    `).join('');
+
+    if (counter) { counter.style.display = 'flex'; }
+    if (countText) { countText.textContent = selectedPhotos.length + ' / ' + MAX_PHOTOS; }
+    if (tip) { tip.style.display = 'block'; }
+    if (addBtn) { addBtn.disabled = selectedPhotos.length >= MAX_PHOTOS; }
+}
+
+// ─── SUBMIT: COMPRESS → UPLOAD → POST ───
+async function submitAd() {
+    const adText = document.getElementById('adText')?.value.trim();
+    const contact = document.getElementById('contactField')?.value.trim() || '';
+
+    if (!adText) return showToast('Please enter ad text.', 'error');
+    if (!locationData.latitude || !locationData.longitude) return showToast('Please wait for location detection.', 'error');
+
+    const postBtn = document.getElementById('postBtn');
+    if (postBtn) { postBtn.disabled = true; postBtn.textContent = 'Posting...'; }
+
+    let serverPhotos = [];
+
+    // Step 1: Upload photos (if any)
+    if (selectedPhotos.length > 0) {
+        showProgress('Uploading photos...', 0);
+        for (let i = 0; i < selectedPhotos.length; i++) {
+            updateProgress('Uploading photo ' + (i+1) + ' of ' + selectedPhotos.length + '...', ((i) / selectedPhotos.length) * 100);
+            try {
+                const compressed = await compressImage(selectedPhotos[i].file, 1920, 0.82);
+                const fd = new FormData();
+                fd.append('photo', compressed);
+                fd.append('user_id', currentUser.id);
+                fd.append('tier', userSubscription.tier || 'free');
+                const resp = await fetch('/api/upload-photo.php', { method: 'POST', body: fd });
+                const data = await resp.json();
+                if (data.success && data.photo) {
+                    serverPhotos.push({ thumb: data.photo.thumb || '', full: data.photo.full || data.photo.thumb || '' });
+                } else {
+                    console.error('Photo upload failed:', data.error);
+                }
+            } catch(err) {
+                console.error('Photo upload error:', err);
+            }
+        }
+        updateProgress('Photos uploaded!', 100);
+    }
+
+    // Step 2: Post the ad
+    updateProgress('Posting your ad...', 100);
+
+    const adData = {
+        id: Date.now(),
+        user_id: currentUser.id,
+        username: currentUser.username,
+        keywords: adText,
+        description: '',
+        contact: contact,
+        location_lat: locationData.latitude,
+        location_lng: locationData.longitude,
+        location_address: locationData.address,
+        photos: serverPhotos,
+        premium_tier: userSubscription.tier || 'free',
+        country_code: currentUser.country_code || '',
+        country_name: currentUser.country_name || '',
+        country_flag: currentUser.country_flag || '',
+        member_since: currentUser.created_at || new Date().toISOString(),
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+    };
+
+    try {
+        const resp = await fetch('/api/post-ad.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify(adData)
+        });
+        const result = await resp.json();
+        hideProgress();
+
+        if (result.success) {
+            // Update photo count for basic tier
+            if (userSubscription.tier === 'basic' && serverPhotos.length > 0) {
+                userSubscription.photos_used = (userSubscription.photos_used || 0) + serverPhotos.length;
+                localStorage.setItem('tangleme_subscription', JSON.stringify(userSubscription));
+            }
+            showToast('✅ Ad posted successfully!', 'success');
+            setTimeout(() => { window.location.href = '/'; }, 1500);
+        } else {
+            showToast('Error: ' + (result.error || 'Failed to post'), 'error');
+            if (postBtn) { postBtn.disabled = false; postBtn.textContent = '✓ Post Ad'; }
+        }
+    } catch(err) {
+        hideProgress();
+        showToast('Network error. Please try again.', 'error');
+        if (postBtn) { postBtn.disabled = false; postBtn.textContent = '✓ Post Ad'; }
+    }
+}
+
+// ─── IMAGE COMPRESSION ───
+function compressImage(file, maxDim, quality) {
+    maxDim = maxDim || 1920;
+    quality = quality || 0.82;
+    return new Promise((resolve) => {
+        const img = new Image();
+        img.onload = function() {
+            let w = img.width, h = img.height;
+            if (w <= maxDim && h <= maxDim && file.size < 1048576) {
+                URL.revokeObjectURL(img.src);
+                return resolve(file);
+            }
+            if (w > maxDim || h > maxDim) {
+                if (w >= h) { h = Math.round(h * (maxDim / w)); w = maxDim; }
+                else { w = Math.round(w * (maxDim / h)); h = maxDim; }
+            }
+            const canvas = document.createElement('canvas');
+            canvas.width = w; canvas.height = h;
+            canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+            URL.revokeObjectURL(img.src);
+            canvas.toBlob(function(blob) {
+                if (!blob) return resolve(file);
+                resolve(new File([blob], file.name.replace(/\.[^.]+$/, '.jpg'), { type: 'image/jpeg' }));
+            }, 'image/jpeg', quality);
+        };
+        img.onerror = () => resolve(file);
+        img.src = URL.createObjectURL(file);
+    });
+}
+
+// ─── PROGRESS ───
+function showProgress(text, pct) {
+    const overlay = document.getElementById('progressOverlay');
+    overlay.classList.add('show');
+    updateProgress(text, pct);
+}
+function updateProgress(text, pct) {
+    const textEl = document.getElementById('progressText');
+    const fillEl = document.getElementById('progressFill');
+    if (textEl) textEl.textContent = text;
+    if (fillEl) fillEl.style.width = pct + '%';
+}
+function hideProgress() {
+    document.getElementById('progressOverlay').classList.remove('show');
+}
+
+// ─── UPGRADE PROMPT (for Basic users hitting limits) ───
+function showUpgradePrompt(title, message) {
+    // Remove any existing prompt
+    const existing = document.getElementById('upgradePromptOverlay');
+    if (existing) existing.remove();
+
+    const overlay = document.createElement('div');
+    overlay.id = 'upgradePromptOverlay';
+    overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:10000;display:flex;align-items:center;justify-content:center;padding:1rem;';
+    overlay.innerHTML = `
+        <div style="background:#fff;border-radius:16px;padding:1.5rem;max-width:360px;width:100%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+            <div style="font-size:2.5rem;margin-bottom:0.75rem;">⬆️</div>
+            <div style="font-size:1.1rem;font-weight:700;color:#2d3748;margin-bottom:0.5rem;">${title}</div>
+            <div style="font-size:0.9rem;color:#4a5568;margin-bottom:1.25rem;line-height:1.5;white-space:pre-line;">${message}</div>
+            <button onclick="window.location.href='/?openUpgrade=pro'" style="width:100%;padding:0.9rem;background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;border:none;border-radius:10px;font-size:1rem;font-weight:700;cursor:pointer;margin-bottom:0.5rem;">
+                Upgrade to Pro — €9.99/mo
+            </button>
+            <button onclick="document.getElementById('upgradePromptOverlay').remove()" style="width:100%;padding:0.75rem;background:#f1f5f9;color:#64748b;border:none;border-radius:10px;font-size:0.9rem;cursor:pointer;">
+                Not now
+            </button>
+        </div>
+    `;
+    document.body.appendChild(overlay);
+}
+
+// ─── TOAST ───
+function showToast(msg, type) {
+    const existing = document.querySelector('.toast');
+    if (existing) existing.remove();
+    const t = document.createElement('div');
+    t.className = 'toast ' + (type || 'info');
+    t.textContent = msg;
+    document.body.appendChild(t);
+    setTimeout(() => { t.style.opacity = '0'; }, 2500);
+    setTimeout(() => { if (t.parentNode) t.remove(); }, 3200);
+}
+</script>
+
+<script>if('serviceWorker' in navigator){navigator.serviceWorker.register('/service-worker.js');}</script>
+
+</body>
+</html>

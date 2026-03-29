@@ -1,0 +1,31 @@
+# Tangle-me API Security - Build 015
+# Block access to sensitive files
+
+# Block error logs
+<Files "error.log">
+    Require all denied
+</Files>
+
+# Block config files from direct access
+<Files "config.php">
+    Require all denied
+</Files>
+
+<Files "push-config.php">
+    Require all denied
+</Files>
+
+# Block moderation file from direct access
+<Files "moderation.php">
+    Require all denied
+</Files>
+
+# Block web push helper from direct access
+<Files "web-push-helper.php">
+    Require all denied
+</Files>
+
+# Block words list from direct access
+<FilesMatch "words-list.*\.php$">
+    Require all denied
+</FilesMatch>

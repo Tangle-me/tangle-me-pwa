@@ -1,0 +1,55 @@
+# Dependencies
+node_modules/
+vendor/
+
+# Environment & secrets
+.env
+.env.local
+.env.production
+*.key
+*.pem
+
+# Uploads (user-generated content)
+uploads/
+photos/
+tangle-bulk/uploads/
+
+# Logs
+*.log
+logs/
+
+# IDE & OS
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Build artifacts
+dist/
+build/
+*.min.js
+*.min.css
+
+# Database dumps (keep schema-changelog, exclude data)
+*.sql.gz
+*.dump
+
+# Hostinger / deployment
+*.zip
+deploy-*.sh
+
+# Cloudflare
+.wrangler/
+
+# Python cache (from data scripts)
+__pycache__/
+*.pyc
+.venv/
+
+# HHB catalog generated files (rebuilt from Excel)
+hhb-catalog/catalog-data.js
+hhb-catalog/photo_map.json

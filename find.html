@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    <meta name="theme-color" content="#667eea">
+    <title>Find Ads - Tangle-me</title>
+    <link rel="manifest" href="/manifest.json">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+          integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+          crossorigin=""/>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: rgba(102,126,234,0.2); }
+        html, body { width: 100%; min-height: 100vh; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; -webkit-font-smoothing: antialiased; }
+        body { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #333; padding: 0; }
+
+        .page-header {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0.75rem 1rem; background: rgba(255,255,255,0.12);
+            backdrop-filter: blur(10px); border-bottom: 1px solid rgba(255,255,255,0.2);
+            position: sticky; top: 0; z-index: 100;
+        }
+        .back-btn {
+            background: rgba(255,255,255,0.2); border: 2px solid rgba(255,255,255,0.3);
+            color: #fff; border-radius: 10px; padding: 0.5rem 1rem; font-weight: 600;
+            font-size: 0.9rem; cursor: pointer; display: flex; align-items: center; gap: 0.4rem;
+        }
+        .page-title { color: #fff; font-size: 1.1rem; font-weight: 700; }
+
+        .find-container {
+            max-width: 500px; margin: 1rem auto; padding: 0 0.75rem 2rem;
+        }
+        .card {
+            background: #fff; border-radius: 16px; padding: 1.25rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15); margin-bottom: 1rem;
+        }
+        .card-title {
+            font-size: 0.85rem; font-weight: 700; color: #4a5568;
+            text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.75rem;
+            display: flex; align-items: center; gap: 0.5rem;
+        }
+
+        /* Keyword input */
+        .search-input {
+            width: 100%; padding: 0.9rem 0.9rem 0.9rem 2.6rem; border: 2px solid #e2e8f0;
+            border-radius: 10px; font-size: 1rem; font-family: inherit; color: #1a202c;
+            transition: border-color 0.2s;
+        }
+        .search-input:focus { outline: none; border-color: #667eea; }
+        .search-input::placeholder { color: #a0aec0; font-size: 0.92rem; }
+        .search-input-wrap {
+            position: relative;
+        }
+        .search-input-icon {
+            position: absolute; left: 0.85rem; top: 50%; transform: translateY(-50%);
+            font-size: 1.15rem; pointer-events: none;
+        }
+        .search-input-clear {
+            position: absolute; right: 0.6rem; top: 50%; transform: translateY(-50%);
+            background: none; border: none; font-size: 1.2rem; cursor: pointer;
+            color: #a0aec0; padding: 0.3rem; line-height: 1;
+        }
+
+        /* Location buttons */
+        .location-options { display: flex; flex-direction: column; gap: 0.6rem; }
+        .location-option-btn {
+            display: flex; align-items: center; gap: 0.75rem; width: 100%;
+            padding: 0.85rem 1rem; background: #f7fafc; border: 2px solid #e2e8f0;
+            border-radius: 12px; cursor: pointer; transition: all 0.2s; text-align: left;
+            font-family: inherit; font-size: 0.95rem; color: #2d3748;
+        }
+        .location-option-btn:active { transform: scale(0.98); }
+        .location-option-btn.selected {
+            border-color: #667eea; background: #f0f4ff;
+        }
+        .location-option-btn .opt-title { font-weight: 600; font-size: 0.95rem; }
+        .location-option-btn .opt-sub { font-size: 0.82rem; color: #718096; }
+
+        /* Selected location display */
+        .location-result {
+            background: #f0fdf4; border: 2px solid #4ade80; border-radius: 10px;
+            padding: 0.75rem 1rem; margin-top: 0.75rem;
+        }
+        .location-result-label { font-size: 0.8rem; color: #16a34a; font-weight: 600; margin-bottom: 0.3rem; }
+        .location-result-value { font-size: 0.9rem; color: #2d3748; font-weight: 500; }
+        .location-result-coords {
+            font-size: 0.75rem; color: #718096; margin-top: 0.3rem;
+            display: flex; align-items: center; gap: 0.5rem;
+        }
+        .location-clear-btn {
+            background: none; border: none; cursor: pointer; font-size: 1.1rem;
+            color: #a0aec0; padding: 0.2rem; line-height: 1;
+        }
+
+        /* Map container */
+        .map-container {
+            display: none; border-radius: 12px; overflow: hidden;
+            margin-top: 0.75rem; border: 2px solid #e2e8f0; height: 280px;
+        }
+        .map-container.show { display: block; }
+        .map-container .leaflet-container { height: 100%; width: 100%; }
+        .map-hint {
+            text-align: center; font-size: 0.8rem; color: #718096; margin-top: 0.4rem;
+        }
+
+        /* Radius selector */
+        .radius-section { display: none; }
+        .radius-section.show { display: block; }
+        .radius-grid {
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem;
+        }
+        .radius-option {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            padding: 0.75rem 0.5rem; border: 2px solid #e2e8f0; border-radius: 10px;
+            cursor: pointer; transition: all 0.2s; background: #f7fafc;
+        }
+        .radius-option:active { transform: scale(0.96); }
+        .radius-option.selected {
+            border-color: #667eea; background: linear-gradient(135deg, #667eea12, #764ba212);
+        }
+        .radius-value { font-weight: 700; font-size: 1.1rem; color: #2d3748; pointer-events: none; }
+        .radius-label { font-size: 0.75rem; color: #718096; pointer-events: none; }
+
+        /* Search button */
+        .search-btn {
+            width: 100%; padding: 1rem; border: none; border-radius: 12px;
+            font-size: 1.1rem; font-weight: 700; cursor: pointer; color: #fff;
+            background: linear-gradient(135deg, #4299e1, #3182ce);
+            transition: transform 0.2s; margin-top: 0.5rem;
+            display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+        }
+        .search-btn:not(:disabled):hover { transform: translateY(-2px); }
+        .search-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+        .cancel-btn {
+            width: 100%; padding: 0.8rem; border: 1px solid #e2e8f0; border-radius: 10px;
+            background: #fff; color: #64748b; font-size: 0.9rem; cursor: pointer;
+            margin-top: 0.5rem;
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%);
+            padding: 14px 28px; border-radius: 50px; font-size: 15px; font-weight: 600;
+            z-index: 99999; box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            white-space: nowrap; transition: opacity 0.5s; color: #fff;
+        }
+        .toast.info { background: linear-gradient(135deg, #667eea, #764ba2); }
+        .toast.error { background: linear-gradient(135deg, #ef4444, #dc2626); }
+    </style>
+</head>
+<body>
+
+<div class="page-header">
+    <button class="back-btn" onclick="goBack()">← Back</button>
+    <span class="page-title">Find Ads</span>
+    <span style="width: 70px;"></span><!-- spacer for centering -->
+</div>
+
+<div class="find-container">
+
+    <!-- KEYWORD SEARCH -->
+    <div class="card">
+        <div class="card-title">🔍 Search</div>
+        <div class="search-input-wrap">
+            <span class="search-input-icon">🔎</span>
+            <input type="text" class="search-input" id="keywordInput"
+                   placeholder="e.g. Toyota FJ Cruiser, apartment to let, plumber..."
+                   maxlength="100" spellcheck="true" autocomplete="off">
+            <button class="search-input-clear" onclick="clearKeyword()" title="Clear">✕</button>
+        </div>
+    </div>
+
+    <!-- LOCATION -->
+    <div class="card">
+        <div class="card-title">📍 Location</div>
+        <div class="location-options">
+            <button type="button" class="location-option-btn" id="aroundMeBtn" onclick="selectAroundMe()">
+                <span style="font-size: 1.3rem;">📍</span>
+                <div>
+                    <div class="opt-title">Around Me</div>
+                    <div class="opt-sub">Use my current location</div>
+                </div>
+            </button>
+            <button type="button" class="location-option-btn" id="pinOnMapBtn" onclick="selectPinOnMap()">
+                <span style="display:flex;align-items:center;justify-content:center;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none">
+                        <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" fill="#e53e3e"/>
+                        <circle cx="12" cy="9" r="2.8" fill="white"/>
+                    </svg>
+                </span>
+                <div>
+                    <div class="opt-title">Pin on Map</div>
+                    <div class="opt-sub">Drop a pin anywhere in the world</div>
+                </div>
+            </button>
+        </div>
+
+        <!-- Map (hidden until Pin on Map is clicked) -->
+        <div class="map-container" id="mapContainer">
+            <div id="findMap"></div>
+        </div>
+        <div class="map-hint" id="mapHint" style="display:none;">Tap on the map to drop a pin</div>
+
+        <!-- Selected location display -->
+        <div class="location-result" id="locationResult" style="display:none;">
+            <div class="location-result-label">📍 Search Location:</div>
+            <div class="location-result-value" id="locationText"></div>
+            <div class="location-result-coords">
+                <span id="locationCoords"></span>
+                <button class="location-clear-btn" onclick="clearLocation()" title="Clear location">✕</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- RADIUS SELECTOR -->
+    <div class="card radius-section" id="radiusSection">
+        <div class="card-title">📏 Search Radius</div>
+        <div class="radius-grid" id="radiusGrid">
+            <!-- populated by JS -->
+        </div>
+    </div>
+
+    <!-- ACTIONS -->
+    <div class="card" style="background: transparent; box-shadow: none; padding: 0;">
+        <button class="search-btn" id="searchBtn" onclick="executeSearch()" disabled>
+            🔍 Search
+        </button>
+        <button class="cancel-btn" onclick="goBack()">Cancel</button>
+    </div>
+</div>
+
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+        crossorigin=""></script>
+
+<script>
+// ─── STATE ───
+let searchData = { keyword: '', latitude: null, longitude: null, address: '', radius: null };
+let map = null;
+let marker = null;
+let selectedRadiusEl = null;
+
+// ─── INIT ───
+document.addEventListener('DOMContentLoaded', function() {
+    buildRadiusGrid();
+    // Auto-focus keyword input on desktop
+    if (window.innerWidth > 768) {
+        document.getElementById('keywordInput').focus();
+    }
+});
+
+function goBack() {
+    window.location.href = '/';
+}
+
+// ─── KEYWORD ───
+function clearKeyword() {
+    const inp = document.getElementById('keywordInput');
+    inp.value = '';
+    inp.focus();
+}
+
+// ─── LOCATION: AROUND ME ───
+function selectAroundMe() {
+    // Reset map state
+    hideMap();
+    clearBtnSelection();
+    document.getElementById('aroundMeBtn').classList.add('selected');
+    document.getElementById('aroundMeBtn').querySelector('.opt-title').textContent = 'Getting location...';
+
+    if (!navigator.geolocation) {
+        showToast('Geolocation not supported by your browser', 'error');
+        resetAroundMeBtn();
+        return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+        async function(pos) {
+            const lat = pos.coords.latitude;
+            const lng = pos.coords.longitude;
+            searchData.latitude = lat;
+            searchData.longitude = lng;
+
+            let address = 'Location at ' + lat.toFixed(4) + ', ' + lng.toFixed(4);
+            try {
+                const resp = await fetch('/api/geocode.php?lat=' + lat + '&lng=' + lng);
+                const data = await resp.json();
+                if (data.friendly_name) address = data.friendly_name;
+                else if (data.display_name) address = data.display_name;
+            } catch(e) { console.error('Geocode failed:', e); }
+
+            searchData.address = address;
+            showLocationResult(address, lat, lng);
+            showRadiusSection();
+            resetAroundMeBtn();
+            updateSearchBtn();
+        },
+        function(err) {
+            showToast('Could not get your location. Enable GPS and try again.', 'error');
+            resetAroundMeBtn();
+            document.getElementById('aroundMeBtn').classList.remove('selected');
+        },
+        { enableHighAccuracy: true, timeout: 15000, maximumAge: 60000 }
+    );
+}
+
+function resetAroundMeBtn() {
+    document.getElementById('aroundMeBtn').querySelector('.opt-title').textContent = 'Around Me';
+}
+
+// ─── LOCATION: PIN ON MAP ───
+function selectPinOnMap() {
+    clearBtnSelection();
+    document.getElementById('pinOnMapBtn').classList.add('selected');
+
+    const container = document.getElementById('mapContainer');
+    if (container.classList.contains('show')) {
+        // Toggle off
+        hideMap();
+        document.getElementById('pinOnMapBtn').classList.remove('selected');
+        return;
+    }
+
+    container.classList.add('show');
+    document.getElementById('mapHint').style.display = 'block';
+
+    if (!map) {
+        // Initialize map
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                function(pos) { initMap(pos.coords.latitude, pos.coords.longitude, 13); },
+                function() { initMap(0, 0, 2); },
+                { enableHighAccuracy: false, timeout: 5000, maximumAge: 300000 }
+            );
+        } else {
+            initMap(0, 0, 2);
+        }
+    } else {
+        setTimeout(() => map.invalidateSize(), 100);
+    }
+}
+
+function initMap(lat, lng, zoom) {
+    map = L.map('findMap').setView([lat, lng], zoom);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap',
+        maxZoom: 19
+    }).addTo(map);
+
+    map.on('click', async function(e) {
+        const clickLat = e.latlng.lat;
+        const clickLng = e.latlng.lng;
+
+        if (marker) map.removeLayer(marker);
+        marker = L.marker([clickLat, clickLng]).addTo(map);
+
+        searchData.latitude = clickLat;
+        searchData.longitude = clickLng;
+
+        let address = 'Location at ' + clickLat.toFixed(4) + ', ' + clickLng.toFixed(4);
+        try {
+            const resp = await fetch('/api/geocode.php?lat=' + clickLat + '&lng=' + clickLng);
+            const data = await resp.json();
+            if (data.friendly_name) address = data.friendly_name;
+            else if (data.display_name) address = data.display_name;
+        } catch(e) { console.error('Geocode failed:', e); }
+
+        searchData.address = address;
+        showLocationResult(address, clickLat, clickLng);
+        showRadiusSection();
+        updateSearchBtn();
+    });
+
+    setTimeout(() => map.invalidateSize(), 100);
+}
+
+function hideMap() {
+    document.getElementById('mapContainer').classList.remove('show');
+    document.getElementById('mapHint').style.display = 'none';
+}
+
+// ─── LOCATION DISPLAY ───
+function showLocationResult(address, lat, lng) {
+    document.getElementById('locationResult').style.display = 'block';
+    document.getElementById('locationText').textContent = address;
+    document.getElementById('locationCoords').textContent = lat.toFixed(5) + ', ' + lng.toFixed(5);
+}
+
+function clearLocation() {
+    searchData.latitude = null;
+    searchData.longitude = null;
+    searchData.address = '';
+    searchData.radius = null;
+    document.getElementById('locationResult').style.display = 'none';
+    document.getElementById('radiusSection').classList.remove('show');
+    clearBtnSelection();
+    if (marker && map) { map.removeLayer(marker); marker = null; }
+    hideMap();
+    updateSearchBtn();
+}
+
+function clearBtnSelection() {
+    document.querySelectorAll('.location-option-btn').forEach(b => b.classList.remove('selected'));
+}
+
+// ─── RADIUS ───
+function buildRadiusGrid() {
+    const grid = document.getElementById('radiusGrid');
+    const options = [
+        { value: 1, label: '1', unit: 'km' },
+        { value: 5, label: '5', unit: 'km' },
+        { value: 10, label: '10', unit: 'km' },
+        { value: 25, label: '25', unit: 'km' },
+        { value: 50, label: '50', unit: 'km' },
+        { value: 0, label: '🌍', unit: 'Global' }
+    ];
+    options.forEach(opt => {
+        const el = document.createElement('div');
+        el.className = 'radius-option';
+        el.setAttribute('data-radius', opt.value);
+        el.innerHTML = '<div class="radius-value">' + opt.label + '</div><div class="radius-label">' + opt.unit + '</div>';
+        grid.appendChild(el);
+    });
+    // Event delegation — bulletproof on mobile
+    grid.onclick = function(ev) {
+        var opt = ev.target.closest('.radius-option');
+        if (!opt) return;
+        var val = parseInt(opt.getAttribute('data-radius'));
+        document.querySelectorAll('.radius-option').forEach(function(o) { o.classList.remove('selected'); });
+        opt.classList.add('selected');
+        selectedRadiusEl = opt;
+        searchData.radius = val;
+        updateSearchBtn();
+    };
+}
+
+function showRadiusSection() {
+    document.getElementById('radiusSection').classList.add('show');
+}
+
+// selectRadius handled by event delegation in buildRadiusGrid
+
+// ─── SEARCH BUTTON ───
+function updateSearchBtn() {
+    const btn = document.getElementById('searchBtn');
+    // Enable if we have location + radius (keyword is optional)
+    const hasLocation = searchData.latitude !== null && searchData.longitude !== null;
+    const hasRadius = searchData.radius !== null;
+    const hasKeywordOnly = document.getElementById('keywordInput').value.trim().length > 0;
+
+    // Allow search if: (location + radius) OR (keyword only for global search)
+    btn.disabled = !(hasLocation && hasRadius) && !hasKeywordOnly;
+}
+
+// Listen for keyword input to enable search btn for keyword-only searches
+document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('keywordInput').addEventListener('input', updateSearchBtn);
+});
+
+// ─── EXECUTE SEARCH ───
+function executeSearch() {
+    const keyword = document.getElementById('keywordInput').value.trim();
+    searchData.keyword = keyword;
+
+    // If keyword only (no location), do a global keyword search
+    if (!searchData.latitude && keyword) {
+        searchData.latitude = 0;
+        searchData.longitude = 0;
+        searchData.radius = 0;
+        searchData.address = 'Global';
+    }
+
+    if (searchData.latitude === null) {
+        showToast('Please select a location or enter a keyword', 'error');
+        return;
+    }
+
+    // Store search data in sessionStorage (reliable across page navigation)
+    sessionStorage.setItem('tangleme_find_search', JSON.stringify({
+        keyword: keyword,
+        lat: searchData.latitude,
+        lng: searchData.longitude,
+        radius: searchData.radius,
+        address: searchData.address
+    }));
+
+    window.location.href = '/';
+}
+
+// ─── TOAST ───
+function showToast(msg, type) {
+    const existing = document.querySelector('.toast');
+    if (existing) existing.remove();
+    const t = document.createElement('div');
+    t.className = 'toast ' + (type || 'info');
+    t.textContent = msg;
+    document.body.appendChild(t);
+    setTimeout(() => { t.style.opacity = '0'; }, 2500);
+    setTimeout(() => { if (t.parentNode) t.remove(); }, 3200);
+}
+</script>
+
+<script>if('serviceWorker' in navigator){navigator.serviceWorker.register('/service-worker.js');}</script>
+
+</body>
+</html>

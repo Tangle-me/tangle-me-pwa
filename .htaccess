@@ -1,0 +1,141 @@
+AddType application/x-httpd-php .html
+# ============================================================
+# Tangle-me .htaccess — Security + Performance — Build 020
+# ============================================================
+
+# ─── HTTPS REDIRECT ───────────────────────────────────────────
+RewriteEngine On
+RewriteCond %{HTTPS} off
+RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+# ─── WWW → NON-WWW CANONICAL ─────────────────────────────────
+RewriteCond %{HTTP_HOST} ^www\.tangle-me\.com [NC]
+RewriteRule ^ https://tangle-me.com%{REQUEST_URI} [L,R=301]
+
+# ─── SECURITY HEADERS ────────────────────────────────────────
+<IfModule mod_headers.c>
+  # Prevent MIME-type sniffing attacks
+  Header always set X-Content-Type-Options "nosniff"
+
+  # Clickjacking protection
+  Header always set X-Frame-Options "SAMEORIGIN"
+
+  # XSS protection (legacy browsers)
+  Header always set X-XSS-Protection "1; mode=block"
+
+  # HTTPS-only for 1 year
+  Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"
+
+  # Control referrer information
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+
+  # Permissions policy — disable unused browser features
+  Header always set Permissions-Policy "camera=(self), microphone=(), geolocation=(self), payment=(self)"
+
+  # Content Security Policy
+  # NOTE: Update stripe.com and cdnjs for your actual CDN usage
+  Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' https://js.stripe.com https://unpkg.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://unpkg.com https://cdn.jsdelivr.net; img-src 'self' data: https: blob:; font-src 'self' https://cdn.jsdelivr.net; connect-src 'self' https://api.stripe.com https://*.stripe.com https://unpkg.com; frame-src https://js.stripe.com https://hooks.stripe.com; worker-src 'self'; manifest-src 'self'"
+
+  # Remove server information leakage
+  Header unset X-Powered-By
+  Header unset Server
+  Header unset X-Generated-By
+</IfModule>
+
+# ─── SUPPRESS SERVER VERSION IN ERRORS ───────────────────────
+ServerTokens Prod
+ServerSignature Off
+
+# ─── BLOCK DIRECT DATABASE / CONFIG FILE ACCESS ──────────────
+<FilesMatch "\.(sql|env|ini|conf|log|bak|sh|py|rb|git)$">
+  Require all denied
+</FilesMatch>
+
+# Block access to hidden files (.htpasswd, .git, etc.)
+<FilesMatch "^\.">
+  Require all denied
+</FilesMatch>
+
+# ─── BLOCK SENSITIVE DIRECTORIES ─────────────────────────────
+RedirectMatch 403 ^/\.git
+RedirectMatch 403 ^/backup
+RedirectMatch 403 ^/sql
+RedirectMatch 403 ^/logs
+
+# ─── DISABLE DIRECTORY LISTING ───────────────────────────────
+Options -Indexes
+
+# ─── SERVICE WORKER — CORRECT MIME TYPE + NO CACHE ──────────
+<Files "service-worker.js">
+  Header set Content-Type "application/javascript"
+  Header set Cache-Control "no-cache, no-store, must-revalidate"
+  Header set Pragma "no-cache"
+  Header set Expires "0"
+  Header set Service-Worker-Allowed "/"
+</Files>
+
+# ─── MANIFEST — CORRECT MIME TYPE ─────────────────────────────
+<Files "manifest.json">
+  Header set Content-Type "application/manifest+json"
+  Header set Cache-Control "no-cache"
+</Files>
+
+# ─── BROWSER CACHING FOR STATIC ASSETS ───────────────────────
+<IfModule mod_expires.c>
+  ExpiresActive On
+
+  # Default
+  ExpiresDefault "access plus 1 month"
+
+  # HTML — short cache (app updates frequently)
+  ExpiresByType text/html "access plus 0 seconds"
+
+  # CSS + JS — short cache since files update frequently
+  ExpiresByType text/css "access plus 1 hour"
+  ExpiresByType application/javascript "access plus 1 hour"
+
+  # Images
+  ExpiresByType image/png "access plus 3 months"
+  ExpiresByType image/webp "access plus 3 months"
+  ExpiresByType image/jpeg "access plus 3 months"
+  ExpiresByType image/svg+xml "access plus 3 months"
+  ExpiresByType image/x-icon "access plus 1 year"
+
+  # Fonts
+  ExpiresByType font/woff2 "access plus 1 year"
+  ExpiresByType application/font-woff "access plus 1 year"
+</IfModule>
+
+# ─── GZIP COMPRESSION ────────────────────────────────────────
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/css application/javascript application/json text/xml application/xml text/plain
+  # Note: BREACH risk is minimal here since Tangle-me uses POST for sensitive data
+  # Monitor if any GET requests reflect secrets into responses
+</IfModule>
+
+# ─── BLOCK COMMON ATTACK PATTERNS ────────────────────────────
+<IfModule mod_rewrite.c>
+  # Block SQL injection attempts in query strings
+  RewriteCond %{QUERY_STRING} (select|insert|update|delete|drop|union|exec|benchmark|script) [NC,OR]
+  RewriteCond %{QUERY_STRING} (<|>|%3C|%3E) [NC]
+  RewriteRule .* - [F,L]
+
+  # Block user-agent strings associated with scanners
+  RewriteCond %{HTTP_USER_AGENT} (sqlmap|nikto|nessus|nmap|masscan|zgrab) [NC]
+  RewriteRule .* - [F,L]
+</IfModule>
+
+# ─── ETAG FIX — PREVENT INODE LEAKAGE ────────────────────────
+FileETag MTime Size
+
+# ─── CORS for PWA assets ─────────────────────────────────────
+<IfModule mod_headers.c>
+  <FilesMatch "\.(ttf|ttc|otf|eot|woff|woff2|font\.css|css|js|json|png|svg|ico)$">
+    Header set Access-Control-Allow-Origin "*"
+  </FilesMatch>
+</IfModule>
+
+# ─── Keep-Alive ──────────────────────────────────────────────
+<IfModule mod_headers.c>
+  Header set Connection keep-alive
+</IfModule>

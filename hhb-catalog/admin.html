@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>HH&amp;B Admin</title>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;background:#f5f5f0;color:#1a1a2e;min-height:100vh}
+.hdr{background:linear-gradient(135deg,#1a1a2e,#16213e);color:#fff;padding:16px 20px;text-align:center}
+.hdr h1{font-size:20px;font-weight:700}
+.hdr p{font-size:12px;opacity:.7;margin-top:4px}
+.pin-gate{max-width:320px;margin:80px auto;text-align:center;padding:20px}
+.pin-gate input{width:100%;padding:16px;border:2px solid #e8e8e3;border-radius:14px;font-size:24px;text-align:center;letter-spacing:10px;font-family:inherit;outline:none;margin-bottom:14px}
+.pin-gate input:focus{border-color:#e85d04}
+.pin-gate button{width:100%;padding:14px;border:none;border-radius:14px;background:#e85d04;color:#fff;font-size:16px;font-weight:700;cursor:pointer;font-family:inherit}
+.tabs{display:flex;border-bottom:2px solid #e8e8e3;background:#fff;overflow-x:auto}
+.tab{padding:14px 20px;font-size:13px;font-weight:600;cursor:pointer;border-bottom:3px solid transparent;white-space:nowrap;color:#888}
+.tab.active{color:#e85d04;border-bottom-color:#e85d04}
+.panel{display:none;padding:20px;max-width:600px;margin:0 auto}
+.panel.active{display:block}
+.card{background:#fff;border-radius:14px;padding:20px;margin-bottom:16px;box-shadow:0 2px 12px rgba(0,0,0,.06);border:1px solid #e8e8e3}
+.card h3{font-size:16px;margin-bottom:12px}
+.card p{font-size:13px;color:#555;margin-bottom:12px;line-height:1.5}
+.upload-zone{border:2px dashed #e8e8e3;border-radius:12px;padding:40px 20px;text-align:center;cursor:pointer;transition:border-color .2s}
+.upload-zone:hover,.upload-zone.drag{border-color:#e85d04;background:#fff3eb}
+.upload-zone input{display:none}
+.upload-zone .icon{font-size:40px;margin-bottom:8px}
+.upload-zone .text{font-size:13px;color:#888}
+.btn{padding:14px 24px;border:none;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;width:100%;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn-primary{background:#e85d04;color:#fff}
+.btn-primary:disabled{opacity:.5;cursor:not-allowed}
+.btn-danger{background:#e63946;color:#fff}
+.btn-secondary{background:#e8e8e3;color:#1a1a2e}
+.result{margin-top:12px;padding:14px;border-radius:10px;font-size:13px;line-height:1.5}
+.result.success{background:#d8f3dc;color:#2d6a4f}
+.result.error{background:#f8d7da;color:#721c24}
+.result.info{background:#fff3eb;color:#e85d04}
+.input-group{margin-bottom:12px}
+.input-group label{display:block;font-size:12px;font-weight:600;color:#555;margin-bottom:4px}
+.input-group input,.input-group select{width:100%;padding:12px;border:2px solid #e8e8e3;border-radius:10px;font-size:14px;font-family:inherit;outline:none}
+.input-group input:focus,.input-group select:focus{border-color:#e85d04}
+.preview-table{width:100%;border-collapse:collapse;font-size:12px;margin-top:12px;max-height:300px;overflow-y:auto;display:block}
+.preview-table th,.preview-table td{padding:6px 8px;border:1px solid #e8e8e3;text-align:left}
+.preview-table th{background:#f5f5f0;font-weight:600;position:sticky;top:0}
+.preview-table tr:nth-child(even){background:#fafaf8}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+.stat{background:#f5f5f0;border-radius:10px;padding:14px;text-align:center}
+.stat-val{font-size:24px;font-weight:700;color:#e85d04}
+.stat-label{font-size:11px;color:#888;margin-top:2px}
+a.back-link{display:inline-block;padding:10px 16px;color:#e85d04;text-decoration:none;font-weight:600;font-size:14px}
+.photo-map-entry{display:flex;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid #e8e8e3}
+.photo-map-entry input{flex:1}
+.photo-map-entry button{width:32px;height:32px;border-radius:8px;border:none;cursor:pointer;font-size:16px}
+</style>
+</head>
+<body>
+<div class="hdr">
+  <h1>🔧 HH&B Admin</h1>
+  <p>Catalog Management</p>
+</div>
+
+<div id="pinGate" class="pin-gate">
+  <h2 style="margin-bottom:20px">🔒 Enter Admin PIN</h2>
+  <input type="password" id="pinInput" maxlength="4" inputmode="numeric" placeholder="••••">
+  <button onclick="checkPin()">Enter</button>
+</div>
+
+<div id="adminPanel" style="display:none">
+  <a href="app.html" class="back-link">← Back to Catalog</a>
+
+  <div class="tabs">
+    <div class="tab active" data-tab="rebuild">🔄 Monthly Rebuild</div>
+    <div class="tab" data-tab="products">📦 Products</div>
+    <div class="tab" data-tab="photos">📷 Photo Map</div>
+  </div>
+
+  <!-- MONTHLY REBUILD TAB -->
+  <div class="panel active" id="tab-rebuild">
+    <div class="card">
+      <h3>Full Catalog Rebuild</h3>
+      <p>Upload the new HHB <b>Agent Price List</b> Excel. The system will automatically detect all changes — prices, new products, discontinued items — and rebuild the entire catalog in one click.</p>
+
+      <div class="upload-zone" id="rebuildUploadZone">
+        <input type="file" id="rebuildFile" accept=".xlsx,.xls">
+        <div class="icon">📊</div>
+        <div class="text">Upload HHB Agent Price List Excel</div>
+      </div>
+    </div>
+
+    <div id="rebuildPreview" style="display:none">
+      <div class="card">
+        <h3>📋 Change Summary</h3>
+        <div class="stats" id="rebuildStats"></div>
+      </div>
+
+      <div class="card" id="priceChangesCard" style="display:none">
+        <h3>💰 Price Changes <span id="priceChangeCount" style="font-size:12px;color:#888"></span></h3>
+        <div style="max-height:200px;overflow-y:auto">
+          <table class="preview-table" id="priceChangesTable">
+            <thead><tr><th>Code</th><th>Old</th><th>New</th><th>%</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card" id="newProductsCard" style="display:none">
+        <h3>🆕 New Products <span id="newProductCount" style="font-size:12px;color:#888"></span></h3>
+        <div style="max-height:200px;overflow-y:auto">
+          <table class="preview-table" id="newProductsTable">
+            <thead><tr><th>Code</th><th>Description</th><th>Section</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card" id="discontinuedCard" style="display:none">
+        <h3>🗑️ Discontinued <span id="discProductCount" style="font-size:12px;color:#888"></span></h3>
+        <p style="font-size:12px;color:#888">These codes are in your current catalog but NOT in the new Excel.</p>
+        <div id="discProductList" style="max-height:150px;overflow-y:auto;font-size:12px;font-family:monospace;background:#f5f5f0;padding:10px;border-radius:8px"></div>
+      </div>
+
+      <div class="card" id="descChangesCard" style="display:none">
+        <h3>📝 Description Changes <span id="descChangeCount" style="font-size:12px;color:#888"></span></h3>
+        <div style="max-height:200px;overflow-y:auto">
+          <table class="preview-table" id="descChangesTable">
+            <thead><tr><th>Code</th><th>Old</th><th>New</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card" id="unmappedCard" style="display:none">
+        <h3>⚠️ Unmapped New Products <span id="unmappedCount" style="font-size:12px;color:#888"></span></h3>
+        <p style="font-size:12px;color:#888">These new products couldn't be auto-assigned to a section. They'll go into "Uncategorized". You can reassign them later.</p>
+        <div id="unmappedList" style="max-height:150px;overflow-y:auto;font-size:12px;font-family:monospace;background:#fff3eb;padding:10px;border-radius:8px"></div>
+      </div>
+
+      <div class="card">
+        <button class="btn btn-primary" id="applyRebuildBtn" onclick="applyRebuild()" style="font-size:16px;padding:18px">
+          ✅ Apply All Changes & Rebuild Catalog
+        </button>
+        <div id="rebuildResult" style="margin-top:12px"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PRODUCTS TAB -->
+  <div class="panel" id="tab-products">
+    <div class="card">
+      <h3>Discontinue a Product</h3>
+      <p>Enter the product code to remove it from the catalog.</p>
+      <div class="input-group">
+        <label>Product Code</label>
+        <input type="text" id="discCode" placeholder="e.g. P999">
+      </div>
+      <button class="btn btn-danger" onclick="discontinueProduct()">Remove Product</button>
+      <div id="discResult"></div>
+    </div>
+
+    <div class="card">
+      <h3>Catalog Stats</h3>
+      <div id="catalogStats">Loading...</div>
+    </div>
+  </div>
+
+  <!-- PHOTOS TAB -->
+  <div class="panel" id="tab-photos">
+    <div class="card">
+      <h3>📁 Photo Scanner</h3>
+      <p>Scan the photos folder to see which product photos you have, and which catalog codes are missing photos.</p>
+      <button class="btn btn-secondary" onclick="scanPhotos()" id="scanBtn">🔍 Scan Photos Folder</button>
+      <div id="scanResult" style="margin-top:12px"></div>
+      <div id="missingPhotos" style="margin-top:12px;display:none">
+        <h3 style="margin-bottom:8px">Codes without photos (first 50)</h3>
+        <div id="missingList" style="max-height:200px;overflow-y:auto;font-size:12px;font-family:monospace;background:#f5f5f0;padding:10px;border-radius:8px"></div>
+      </div>
+      <div id="orphanPhotos" style="margin-top:12px;display:none">
+        <h3 style="margin-bottom:8px">Photos not matching any catalog code (first 50)</h3>
+        <div id="orphanList" style="max-height:200px;overflow-y:auto;font-size:12px;font-family:monospace;background:#f5f5f0;padding:10px;border-radius:8px"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Photo Mapping — Kits & Shared Photos</h3>
+      <p>Link one photo to multiple product codes. For example, if P999 is a kit of P997 + 6005 + P996, add the kit photo to all four codes.</p>
+
+      <div class="input-group">
+        <label>Photo filename (e.g. P999.jpg)</label>
+        <input type="text" id="photoFilename" placeholder="P999.jpg">
+      </div>
+      <div class="input-group">
+        <label>Product codes that should show this photo (comma separated)</label>
+        <input type="text" id="photoCodes" placeholder="P999, P997, 6005, P996">
+      </div>
+      <button class="btn btn-primary" onclick="addPhotoMapping()" style="margin-bottom:12px">➕ Add Mapping</button>
+
+      <h3 style="margin-top:20px">Current Custom Mappings</h3>
+      <div id="photoMappings">Loading...</div>
+
+      <button class="btn btn-secondary" onclick="savePhotoMap()" style="margin-top:12px" id="savePhotoMapBtn">💾 Save Photo Map</button>
+      <div id="photoResult"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const PIN = '1320';
+const API = location.origin + '/hhb-catalog/';
+let currentPrices = {};
+let currentProducts = {}; // code -> {d, p, s, section, brand}
+let photoMap = {};
+let customMappings = [];
+let catToSection = {};
+let catToBrand = {};
+let newCatalogJS = ''; // generated catalog-data.js content
+
+// PIN Gate
+function checkPin() {
+  if (document.getElementById('pinInput').value === PIN) {
+    document.getElementById('pinGate').style.display = 'none';
+    document.getElementById('adminPanel').style.display = 'block';
+    loadCatalogData();
+    loadPhotoMap();
+  } else { alert('Wrong PIN'); }
+}
+document.getElementById('pinInput').addEventListener('keydown', e => { if (e.key === 'Enter') checkPin(); });
+
+// Tabs
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById('tab-' + tab.dataset.tab).classList.add('active');
+  });
+});
+
+// Load current catalog + mappings
+function loadCatalogData() {
+  const s1 = document.createElement('script');
+  s1.src = 'catalog-data.js';
+  s1.onload = () => {
+    let total = 0, withPrice = 0;
+    for (const sec of ORDER) {
+      const bs = SECTIONS[sec]; if (!bs) continue;
+      for (const [bn, ps] of Object.entries(bs)) {
+        for (const p of ps) {
+          total++;
+          currentProducts[p.c] = { d: p.d, p: p.p || 0, s: p.s || '', section: sec, brand: bn };
+          if (p.p) { withPrice++; currentPrices[p.c] = p.p; }
+        }
+      }
+    }
+    document.getElementById('catalogStats').innerHTML =
+      '<div class="stats"><div class="stat"><div class="stat-val">' + total + '</div><div class="stat-label">Products</div></div>' +
+      '<div class="stat"><div class="stat-val">' + withPrice + '</div><div class="stat-label">With Prices</div></div>' +
+      '<div class="stat"><div class="stat-val">' + ORDER.length + '</div><div class="stat-label">Sections</div></div></div>';
+
+    // Load mappings
+    const s2 = document.createElement('script');
+    s2.src = 'catalog-mappings.js';
+    s2.onload = () => {
+      if (typeof CAT_TO_SECTION !== 'undefined') catToSection = CAT_TO_SECTION;
+      if (typeof CAT_TO_BRAND !== 'undefined') catToBrand = CAT_TO_BRAND;
+    };
+    document.head.appendChild(s2);
+  };
+  document.head.appendChild(s1);
+}
+
+/* ══════════════════════════════════════════════════
+   MONTHLY REBUILD ENGINE
+   ══════════════════════════════════════════════════ */
+const rebuildZone = document.getElementById('rebuildUploadZone');
+const rebuildFile = document.getElementById('rebuildFile');
+rebuildZone.addEventListener('click', () => rebuildFile.click());
+rebuildZone.addEventListener('dragover', e => { e.preventDefault(); rebuildZone.classList.add('drag'); });
+rebuildZone.addEventListener('dragleave', () => rebuildZone.classList.remove('drag'));
+rebuildZone.addEventListener('drop', e => { e.preventDefault(); rebuildZone.classList.remove('drag'); processRebuild(e.dataTransfer.files[0]); });
+rebuildFile.addEventListener('change', () => { if (rebuildFile.files[0]) processRebuild(rebuildFile.files[0]); });
+
+let rebuildData = null; // holds the full rebuild result
+
+function processRebuild(file) {
+  rebuildZone.querySelector('.text').textContent = '⏳ Processing ' + file.name + '...';
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const wb = XLSX.read(e.target.result, { type: 'binary' });
+    const ws = wb.Sheets[wb.SheetNames[0]];
+    const rows = XLSX.utils.sheet_to_json(ws, { header: 1 });
+
+    // Find header row
+    let headerIdx = -1, codeCol = 0, descCol = 1, catCol = 2, groupCol = 3, salonPriceCol = 4;
+    for (let i = 0; i < Math.min(rows.length, 10); i++) {
+      const row = rows[i]; if (!row) continue;
+      for (let j = 0; j < row.length; j++) {
+        const v = String(row[j] || '').toLowerCase();
+        if (v === 'code') codeCol = j;
+        if (v === 'product item' || v === 'description') descCol = j;
+        if (v === 'category') catCol = j;
+        if (v === 'group') groupCol = j;
+        if (v.includes('salon') && v.includes('price')) salonPriceCol = j;
+      }
+      if (String(rows[i]?.[0] || '').toLowerCase() === 'code') { headerIdx = i; break; }
+    }
+    if (headerIdx < 0) headerIdx = 2; // fallback
+
+    // Parse all Excel rows
+    const excelProducts = {};
+    for (let i = headerIdx + 1; i < rows.length; i++) {
+      const row = rows[i]; if (!row) continue;
+      const code = String(row[codeCol] || '').trim();
+      const desc = String(row[descCol] || '').trim();
+      const cat = String(row[catCol] || '').trim();
+      const group = String(row[groupCol] || '').trim();
+      const price = parseFloat(row[salonPriceCol]);
+      if (!code || !desc) continue;
+      excelProducts[code] = { code, desc, cat, group, price: isNaN(price) ? 0 : price };
+    }
+
+    // Compare: find changes
+    const priceChanges = [];
+    const descChanges = [];
+    const newProducts = [];
+    const discontinued = [];
+    const unmapped = [];
+
+    const excelCodes = new Set(Object.keys(excelProducts));
+    const currentCodes = new Set(Object.keys(currentProducts));
+
+    // Check each Excel product against current catalog
+    for (const [code, ep] of Object.entries(excelProducts)) {
+      if (currentProducts[code]) {
+        const cp = currentProducts[code];
+        // Price change?
+        if (ep.price > 0 && cp.p > 0 && Math.abs(ep.price - cp.p) > 0.01) {
+          const pct = ((ep.price - cp.p) / cp.p * 100).toFixed(1);
+          priceChanges.push({ code, oldPrice: cp.p, newPrice: ep.price, pct });
+        }
+        // Description change?
+        if (ep.desc && cp.d && ep.desc.toUpperCase() !== cp.d.toUpperCase()) {
+          descChanges.push({ code, oldDesc: cp.d, newDesc: ep.desc });
+        }
+      } else {
+        // New product — auto-assign section/brand
+        let section = catToSection[ep.cat] || null;
+        let brand = catToBrand[ep.cat] || 'General';
+        if (!section) {
+          section = 'Uncategorized';
+          unmapped.push(code + ' — ' + ep.desc + ' [' + ep.cat + ']');
+        }
+        newProducts.push({ ...ep, section, brand });
+      }
+    }
+
+    // Discontinued: in current catalog but not in Excel
+    for (const code of currentCodes) {
+      if (!excelCodes.has(code)) {
+        const cp = currentProducts[code];
+        discontinued.push(code + ' — ' + (cp.d || '').substring(0, 50));
+      }
+    }
+
+    rebuildData = { excelProducts, priceChanges, descChanges, newProducts, discontinued, unmapped };
+
+    // Show summary
+    rebuildZone.querySelector('.text').textContent = '✅ ' + file.name + ' — ' + Object.keys(excelProducts).length + ' products parsed';
+    const totalChanges = priceChanges.length + newProducts.length + discontinued.length + descChanges.length;
+
+    document.getElementById('rebuildStats').innerHTML =
+      '<div class="stat"><div class="stat-val">' + Object.keys(excelProducts).length + '</div><div class="stat-label">Excel Products</div></div>' +
+      '<div class="stat"><div class="stat-val">' + priceChanges.length + '</div><div class="stat-label">Price Changes</div></div>' +
+      '<div class="stat"><div class="stat-val">' + newProducts.length + '</div><div class="stat-label">New Products</div></div>' +
+      '<div class="stat"><div class="stat-val">' + discontinued.length + '</div><div class="stat-label">Discontinued</div></div>' +
+      '<div class="stat"><div class="stat-val">' + descChanges.length + '</div><div class="stat-label">Desc Changes</div></div>' +
+      '<div class="stat"><div class="stat-val">' + totalChanges + '</div><div class="stat-label">Total Changes</div></div>';
+
+    // Price changes table
+    if (priceChanges.length) {
+      document.getElementById('priceChangesCard').style.display = 'block';
+      document.getElementById('priceChangeCount').textContent = '(' + priceChanges.length + ')';
+      const tbody = document.querySelector('#priceChangesTable tbody');
+      tbody.innerHTML = '';
+      priceChanges.slice(0, 100).forEach(p => {
+        const color = p.pct > 0 ? '#e63946' : '#2d6a4f';
+        tbody.innerHTML += '<tr><td><b>' + p.code + '</b></td><td>R' + p.oldPrice.toFixed(2) + '</td><td>R' + p.newPrice.toFixed(2) + '</td><td style="color:' + color + '">' + (p.pct > 0 ? '+' : '') + p.pct + '%</td></tr>';
+      });
+    }
+
+    // New products table
+    if (newProducts.length) {
+      document.getElementById('newProductsCard').style.display = 'block';
+      document.getElementById('newProductCount').textContent = '(' + newProducts.length + ')';
+      const tbody = document.querySelector('#newProductsTable tbody');
+      tbody.innerHTML = '';
+      newProducts.slice(0, 50).forEach(p => {
+        tbody.innerHTML += '<tr><td><b>' + p.code + '</b></td><td>' + p.desc.substring(0, 40) + '</td><td style="font-size:11px">' + p.section + '</td></tr>';
+      });
+    }
+
+    // Discontinued
+    if (discontinued.length) {
+      document.getElementById('discontinuedCard').style.display = 'block';
+      document.getElementById('discProductCount').textContent = '(' + discontinued.length + ')';
+      document.getElementById('discProductList').textContent = discontinued.slice(0, 50).join('\n');
+    }
+
+    // Description changes
+    if (descChanges.length) {
+      document.getElementById('descChangesCard').style.display = 'block';
+      document.getElementById('descChangeCount').textContent = '(' + descChanges.length + ')';
+      const tbody = document.querySelector('#descChangesTable tbody');
+      tbody.innerHTML = '';
+      descChanges.slice(0, 50).forEach(d => {
+        tbody.innerHTML += '<tr><td><b>' + d.code + '</b></td><td style="font-size:11px">' + d.oldDesc.substring(0, 35) + '</td><td style="font-size:11px">' + d.newDesc.substring(0, 35) + '</td></tr>';
+      });
+    }
+
+    // Unmapped
+    if (unmapped.length) {
+      document.getElementById('unmappedCard').style.display = 'block';
+      document.getElementById('unmappedCount').textContent = '(' + unmapped.length + ')';
+      document.getElementById('unmappedList').textContent = unmapped.slice(0, 50).join('\n');
+    }
+
+    document.getElementById('rebuildPreview').style.display = 'block';
+  };
+  reader.readAsBinaryString(file);
+}
+
+function applyRebuild() {
+  if (!rebuildData) return;
+  const btn = document.getElementById('applyRebuildBtn');
+  btn.disabled = true;
+  btn.textContent = '⏳ Rebuilding catalog...';
+
+  const { excelProducts, newProducts } = rebuildData;
+
+  // Build new SECTIONS object from scratch
+  // Start with current structure, then apply all changes
+  const newSections = {};
+  const usedOrder = new Set();
+
+  // 1. Copy existing products, updating prices/descriptions from Excel
+  for (const sec of ORDER) {
+    const bs = SECTIONS[sec]; if (!bs) continue;
+    for (const [bn, ps] of Object.entries(bs)) {
+      for (const p of ps) {
+        const ep = excelProducts[p.c];
+        if (!ep) continue; // discontinued — skip
+
+        if (!newSections[sec]) newSections[sec] = {};
+        if (!newSections[sec][bn]) newSections[sec][bn] = [];
+        usedOrder.add(sec);
+
+        const updated = { c: p.c, d: ep.desc || p.d };
+        if (p.s) updated.s = p.s;
+        if (ep.price > 0) updated.p = Math.round(ep.price * 100) / 100;
+        else if (p.p) updated.p = p.p;
+
+        newSections[sec][bn].push(updated);
+      }
+    }
+  }
+
+  // 2. Add new products
+  for (const np of newProducts) {
+    const sec = np.section;
+    const brand = np.brand;
+    if (!newSections[sec]) newSections[sec] = {};
+    if (!newSections[sec][brand]) newSections[sec][brand] = [];
+    usedOrder.add(sec);
+
+    const prod = { c: np.code, d: np.desc };
+    if (np.price > 0) prod.p = Math.round(np.price * 100) / 100;
+    newSections[sec][brand].push(prod);
+  }
+
+  // 3. Build ORDER array (keep original order, add new sections at end)
+  const newOrder = ORDER.filter(s => usedOrder.has(s));
+  for (const s of usedOrder) {
+    if (!newOrder.includes(s)) newOrder.push(s);
+  }
+
+  // 4. Generate catalog-data.js content
+  const date = new Date().toISOString().split('T')[0];
+  let js = '// HHB Catalog Data — auto-generated\n';
+  js += '// Last updated: ' + date + '\n\n';
+  js += 'const SECTIONS=' + JSON.stringify(newSections) + ';\n';
+  js += 'const ORDER=' + JSON.stringify(newOrder) + ';\n';
+  js += 'const ICONS=' + JSON.stringify(ICONS) + ';\n';
+
+  newCatalogJS = js;
+
+  // Count products in new catalog
+  let newTotal = 0;
+  for (const sec of Object.values(newSections)) {
+    for (const ps of Object.values(sec)) newTotal += ps.length;
+  }
+
+  // 5. Also update mappings with any new categories
+  for (const np of newProducts) {
+    if (np.section !== 'Uncategorized' && np.cat) {
+      catToSection[np.cat] = np.section;
+      catToBrand[np.cat] = np.brand;
+    }
+  }
+
+  // 6. Save to server
+  fetch(API + 'save-catalog.php', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ pin: PIN, action: 'save_catalog', content: js })
+  })
+  .then(r => r.json())
+  .then(data => {
+    if (data.ok) {
+      // Also save updated mappings
+      const mappingsJS = '// Auto-generated: HHB Excel Category -> Catalog Section/Brand mappings\n' +
+        'const CAT_TO_SECTION = ' + JSON.stringify(catToSection) + ';\n' +
+        'const CAT_TO_BRAND = ' + JSON.stringify(catToBrand) + ';\n';
+      fetch(API + 'save-catalog.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pin: PIN, action: 'save_mappings', content: mappingsJS })
+      });
+
+      document.getElementById('rebuildResult').innerHTML =
+        '<div class="result success">✅ Catalog rebuilt successfully!<br>' +
+        '<b>' + newTotal + ' products</b> across <b>' + newOrder.length + ' sections</b>.<br>' +
+        'Backup saved as ' + data.backup + '.<br>' +
+        'File size: ' + (data.bytes / 1024).toFixed(0) + ' KB.<br><br>' +
+        'Refresh the catalog app to see all changes.</div>';
+    } else {
+      document.getElementById('rebuildResult').innerHTML =
+        '<div class="result error">❌ ' + (data.error || 'Unknown error') + '</div>';
+    }
+    btn.disabled = false;
+    btn.textContent = '✅ Apply All Changes & Rebuild Catalog';
+  })
+  .catch(err => {
+    document.getElementById('rebuildResult').innerHTML =
+      '<div class="result error">❌ Network error: ' + err.message + '</div>';
+    btn.disabled = false;
+    btn.textContent = '✅ Apply All Changes & Rebuild Catalog';
+  });
+}
+
+// ── DISCONTINUE (manual) ──
+function discontinueProduct() {
+  const code = document.getElementById('discCode').value.trim();
+  if (!code) return alert('Enter a product code');
+  if (!confirm('Remove product ' + code + ' from the catalog?')) return;
+  fetch(API + 'update-catalog.php', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ pin: PIN, action: 'discontinue', code })
+  }).then(r => r.json()).then(data => {
+    const el = document.getElementById('discResult');
+    if (data.ok) el.innerHTML = '<div class="result success">✅ Removed ' + data.removed + '</div>';
+    else el.innerHTML = '<div class="result error">❌ ' + (data.error || 'Failed') + '</div>';
+  });
+}
+
+// ── PHOTO SCANNER ──
+function scanPhotos() {
+  document.getElementById('scanBtn').textContent = 'Scanning...';
+  document.getElementById('scanBtn').disabled = true;
+  fetch(API + 'list-photos.php?pin=' + PIN).then(r => r.json()).then(data => {
+    if (data.error) { document.getElementById('scanResult').innerHTML = '<div class="result error">❌ ' + data.error + '</div>'; return; }
+    const serverPhotos = data.photos;
+    const photoSet = new Set(serverPhotos.map(f => f.replace(/\.(jpg|jpeg|png|webp)$/i, '')));
+    const catalogCodes = Object.keys(currentProducts).length > 0 ? Object.keys(currentProducts) : Object.keys(photoMap);
+    const missing = catalogCodes.filter(code => !photoSet.has(code));
+    const codeSet = new Set(catalogCodes);
+    const orphans = serverPhotos.filter(f => !codeSet.has(f.replace(/\.(jpg|jpeg|png|webp)$/i, '')));
+    const matched = catalogCodes.length - missing.length;
+    document.getElementById('scanResult').innerHTML =
+      '<div class="stats"><div class="stat"><div class="stat-val">' + serverPhotos.length + '</div><div class="stat-label">Photos on Server</div></div><div class="stat"><div class="stat-val">' + matched + '</div><div class="stat-label">Matched</div></div><div class="stat"><div class="stat-val">' + missing.length + '</div><div class="stat-label">Missing Photos</div></div><div class="stat"><div class="stat-val">' + orphans.length + '</div><div class="stat-label">Unmatched Photos</div></div></div>';
+    if (missing.length) { document.getElementById('missingPhotos').style.display = 'block'; document.getElementById('missingList').textContent = missing.slice(0, 50).join(', '); }
+    if (orphans.length) { document.getElementById('orphanPhotos').style.display = 'block'; document.getElementById('orphanList').textContent = orphans.slice(0, 50).join(', '); }
+  }).catch(err => {
+    document.getElementById('scanResult').innerHTML = '<div class="result error">❌ ' + err.message + '</div>';
+  }).finally(() => { document.getElementById('scanBtn').textContent = '🔍 Scan Photos Folder'; document.getElementById('scanBtn').disabled = false; });
+}
+
+// ── PHOTO MAP ──
+function loadPhotoMap() {
+  fetch('photo_map.json').then(r => r.json()).then(map => {
+    photoMap = map;
+    const photoToCodes = {};
+    for (const [code, photos] of Object.entries(map)) {
+      for (const photo of photos) {
+        if (!photoToCodes[photo]) photoToCodes[photo] = [];
+        if (!photoToCodes[photo].includes(code)) photoToCodes[photo].push(code);
+      }
+    }
+    customMappings = [];
+    for (const [photo, codes] of Object.entries(photoToCodes)) {
+      if (codes.length > 1) customMappings.push({ photo, codes });
+    }
+    renderPhotoMappings();
+  }).catch(() => { document.getElementById('photoMappings').textContent = 'Could not load photo map.'; });
+}
+function renderPhotoMappings() {
+  const el = document.getElementById('photoMappings');
+  if (!customMappings.length) { el.innerHTML = '<p style="color:#888;font-size:13px;padding:12px 0">No shared mappings yet.</p>'; return; }
+  el.innerHTML = customMappings.map((m, i) =>
+    '<div class="photo-map-entry"><span style="font-size:12px;font-weight:600;min-width:120px">📷 ' + m.photo + '</span><span style="font-size:12px;flex:1">→ ' + m.codes.join(', ') + '</span><button onclick="removeMapping(' + i + ')" style="background:#f8d7da;color:#e63946">✕</button></div>'
+  ).join('');
+}
+function addPhotoMapping() {
+  const photo = document.getElementById('photoFilename').value.trim();
+  const codesStr = document.getElementById('photoCodes').value.trim();
+  if (!photo || !codesStr) return alert('Fill in both fields');
+  const codes = codesStr.split(',').map(c => c.trim()).filter(Boolean);
+  for (const code of codes) {
+    if (!photoMap[code]) photoMap[code] = [code + '.jpg'];
+    if (!photoMap[code].includes(photo)) photoMap[code].push(photo);
+  }
+  const existing = customMappings.find(m => m.photo === photo);
+  if (existing) { for (const c of codes) { if (!existing.codes.includes(c)) existing.codes.push(c); } }
+  else customMappings.push({ photo, codes });
+  renderPhotoMappings();
+  document.getElementById('photoFilename').value = '';
+  document.getElementById('photoCodes').value = '';
+}
+function removeMapping(idx) {
+  const m = customMappings[idx];
+  for (const code of m.codes) {
+    if (photoMap[code]) { photoMap[code] = photoMap[code].filter(p => p !== m.photo); if (!photoMap[code].length) photoMap[code] = [code + '.jpg']; }
+  }
+  customMappings.splice(idx, 1);
+  renderPhotoMappings();
+}
+function savePhotoMap() {
+  fetch(API + 'update-catalog.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ pin: PIN, action: 'update_photo_map', map: photoMap }) })
+  .then(r => r.json()).then(data => {
+    const el = document.getElementById('photoResult');
+    if (data.ok) el.innerHTML = '<div class="result success">✅ Photo map saved.</div>';
+    else el.innerHTML = '<div class="result error">❌ ' + (data.error || 'Failed') + '</div>';
+  });
+}
+</script>
+</body>
+</html>
